@@ -9,6 +9,7 @@ use Getopt::Long;
 use Pod::Usage;
 use POSIX qw(tmpnam);
 use Cwd qw(cwd abs_path);
+use File::Basename qw( dirname );
 
 ### Input options ###
 
@@ -72,6 +73,8 @@ if(! -e $tmpDir){
 
 ### Run picard tools ###
 my @picardJobs;
+my @wgsmetrics;
+my @hsmetrics;
 my $javaMem = $queue_threads * $queue_mem;
 my $picard = " java -Xmx".$javaMem."G -jar ".$picard_path;
 
@@ -112,6 +115,7 @@ foreach my $bam (@bams) {
     # WGS
     if($wgs){
 	my $output = $output_dir."/".$bamName."_WGSMetrics.txt";
+	push(@wgsmetrics, $output);
 	if(! -e $output) {
 	    my $command = $picard."/CollectWgsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
@@ -147,8 +151,9 @@ foreach my $bam (@bams) {
     # CAPTURE
     if($capture){
 	my $output = $output_dir."/".$bamName."_HSMetrics.txt";
+	push(@hsmetrics, $output);
 	if(! -e $output) {
-	    my $command = $picard."/CalculateHsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVAL=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
+	    my $command = $picard."/CalculateHsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "$bamName\_HSMetrics",
@@ -162,6 +167,25 @@ foreach my $bam (@bams) {
     }
 }
 
+### Parse HSMetrics or WGSMetrics
+my $root_dir = dirname(abs_path($0));
+
+if( @wgsmetrics ) {}
+if( @hsmetrics ) {
+    my $command = "perl $root_dir/parsePicardOutput.pl -output_dir ".$output_dir." ";
+    foreach my $hsmetric (@hsmetrics) { $command .= "-hsmetrics $hsmetric "}
+    my $jobID = bashAndSubmit(
+	command => $command,
+	jobName => "parse_hsmetrics",
+	tmpDir => $tmpDir,
+	outputDir => $output_dir,
+	queue => $queue,
+	queueThreads => $queue_threads,
+	holdJobs => join(",",@picardJobs),
+	);
+    push(@picardJobs, $jobID);
+}
+
 ### Run Rplots ###
 
 
@@ -169,6 +193,7 @@ foreach my $bam (@bams) {
 sub bashAndSubmit {
     my %args = (
 	jobName => "bamStats",
+	holdJobs => "",
 	@_);
 
     my $jobID = $args{jobName}."_".get_job_id();
@@ -180,8 +205,11 @@ sub bashAndSubmit {
     print BASH "$args{command}\n";
     close BASH;
     
-    system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $args{tmpDir} -e $args{tmpDir} -N $jobID $bashFile";
-    
+    if( $args{holdJobs} ){
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $args{tmpDir} -e $args{tmpDir} -N $jobID -hold_jid $args{holdJobs} $bashFile";
+    } else { 
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $args{tmpDir} -e $args{tmpDir} -N $jobID $bashFile";
+    }
     return $jobID;
 }
 
@@ -226,6 +254,5 @@ $ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
     -queue_mem 8;
     -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.119>
 
-    
 =cut
 
