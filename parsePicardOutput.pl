@@ -14,7 +14,7 @@ my $output_dir = "";
 
 # Parse options
 GetOptions ("hsmetrics=s" => \@hsmetrics,
-	    "wsgmetrics=s" => \@wgsmetrics,
+	    "wgsmetrics=s" => \@wgsmetrics,
 	    "output_dir=s" => \$output_dir
 	    ) or pod2usage(1);
 
@@ -71,7 +71,7 @@ if( @wgsmetrics ){
     
 	my $table_header = <FILE>;
 	unless ($printed_header) { #print table header once.
-	    print SUMFILE "sample \t samplePath \t". $table_header;
+	    print SUMFILE "sample \t". $table_header;
 	    $printed_header = 1;
 	}
 
