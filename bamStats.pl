@@ -27,9 +27,10 @@ my $capture = "";
 my $targets = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/sorted_Homo_sapiens.GRCh37.74_nopseudo_noRNA_CDS_picard.bed";
 my $baits = "/hpc/cog_bioinf/ENRICH/PICARD/sorted_SS_exome_v5_S04380110_Covered_picard.bed";
 
-my $pdf = "";
-my $html = "";
+#my $pdf = "";
+#my $html = "";
 my $output_dir = cwd()."/bamStats";
+my $run_name = "bamStats";
 
 # Picard and Cluster settings
 my $queue = "veryshort";
@@ -48,9 +49,10 @@ GetOptions ("bam=s" => \@bams,
 	    "capture" => \$capture,
 	    "targets=s" => \$targets,
 	    "baits=s" => \$baits,
-	    "pdf" => \$pdf,
-	    "html" => \$html,
+#	    "pdf" => \$pdf,
+#	    "html" => \$html,
 	    "output_dir=s" => \$output_dir,
+	    "run_name=s", => \$run_name,
 	    "queue=s" => \$queue,
 	    "queue_threads=i" =>  \$queue_threads,
 	    "queue_mem=i" => \$queue_mem,
@@ -75,22 +77,24 @@ if(! -e $tmpDir){
 my @picardJobs;
 my @wgsmetrics;
 my @hsmetrics;
+my @bam_names;
 my $javaMem = $queue_threads * $queue_mem;
 my $picard = " java -Xmx".$javaMem."G -jar ".$picard_path;
 
 foreach my $bam (@bams) {
     $bam = abs_path($bam);
-    my $bamName = (split("/",$bam))[-1];
-    $bamName =~ s/.bam//;
-    print "\n$bamName \t $bam \n";
+    my $bam_name = (split("/",$bam))[-1];
+    $bam_name =~ s/.bam//;
+    push(@bam_names, $bam_name);
+    print "\n$bam_name \t $bam \n";
     
     # Multiple metrics
-    my $output = $output_dir."/".$bamName."_MultipleMetrics.txt";
-    if(! (-e $output."alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".insert_size_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
+    my $output = $output_dir."/".$bam_name."_MultipleMetrics.txt";
+    if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".insert_size_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
 	my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	my $jobID = bashAndSubmit(
 	    command => $command,
-	    jobName => "$bamName\_MultipleMetrics",
+	    jobName => "$bam_name\_MultipleMetrics",
 	    tmpDir => $tmpDir,
 	    outputDir => $output_dir,
 	    queue => $queue,
@@ -99,12 +103,12 @@ foreach my $bam (@bams) {
 	push(@picardJobs, $jobID);
     }
     # Library Complexity
-    $output = $output_dir."/".$bamName."_LibComplexity.txt";
+    $output = $output_dir."/".$bam_name."_LibComplexity.txt";
     if(! -e $output) {
 	my $command = $picard."/EstimateLibraryComplexity.jar INPUT=".$bam." OUTPUT=".$output;
 	my $jobID = bashAndSubmit(
 	    command => $command,
-	    jobName => "$bamName\_LibComplexity",
+	    jobName => "$bam_name\_LibComplexity",
 	    tmpDir => $tmpDir,
 	    outputDir => $output_dir,
 	    queue => $queue,
@@ -114,13 +118,13 @@ foreach my $bam (@bams) {
     }
     # WGS
     if($wgs){
-	my $output = $output_dir."/".$bamName."_WGSMetrics.txt";
+	my $output = $output_dir."/".$bam_name."_WGSMetrics.txt";
 	push(@wgsmetrics, $output);
 	if(! -e $output) {
 	    my $command = $picard."/CollectWgsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "$bamName\_WGSMetrics",
+		jobName => "$bam_name\_WGSMetrics",
 		tmpDir => $tmpDir,
 		outputDir => $output_dir,
 		queue => $queue,
@@ -133,12 +137,12 @@ foreach my $bam (@bams) {
 
     # RNA
     if($rna){
-	my $output = $output_dir."/".$bamName."_RNAMetrics.txt";
+	my $output = $output_dir."/".$bam_name."_RNAMetrics.txt";
 	if(! -e $output) {
 	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand;
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "$bamName\_RNAMetrics",
+		jobName => "$bam_name\_RNAMetrics",
 		tmpDir => $tmpDir,
 		outputDir => $output_dir,
 		queue => $queue,
@@ -150,13 +154,13 @@ foreach my $bam (@bams) {
 
     # CAPTURE
     if($capture){
-	my $output = $output_dir."/".$bamName."_HSMetrics.txt";
+	my $output = $output_dir."/".$bam_name."_HSMetrics.txt";
 	push(@hsmetrics, $output);
 	if(! -e $output) {
 	    my $command = $picard."/CalculateHsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "$bamName\_HSMetrics",
+		jobName => "$bam_name\_HSMetrics",
 		tmpDir => $tmpDir,
 		outputDir => $output_dir,
 		queue => $queue,
@@ -170,10 +174,25 @@ foreach my $bam (@bams) {
 ### Parse HSMetrics or WGSMetrics
 my $root_dir = dirname(abs_path($0));
 
-if( @wgsmetrics ) {}
-if( @hsmetrics ) {
+if( @wgsmetrics ) {
+    print "\n Parse WGSMetrics \n";
     my $command = "perl $root_dir/parsePicardOutput.pl -output_dir ".$output_dir." ";
-    foreach my $hsmetric (@hsmetrics) { $command .= "-hsmetrics $hsmetric "}
+    foreach my $wgsmetric (@wgsmetrics) { $command .= "-wgsmetrics $wgsmetric " }
+    my $jobID = bashAndSubmit(
+	command => $command,
+	jobName => "parse_wgsmetrics",
+	tmpDir => $tmpDir,
+	outputDir => $output_dir,
+	queue => $queue,
+	queueThreads => $queue_threads,
+	holdJobs => join(",",@picardJobs),
+	);
+    push(@picardJobs, $jobID);
+}
+if( @hsmetrics ) {
+    print "\n Parse HSMetrics \n";
+    my $command = "perl $root_dir/parsePicardOutput.pl -output_dir ".$output_dir." ";
+    foreach my $hsmetric (@hsmetrics) { $command .= "-hsmetrics $hsmetric " }
     my $jobID = bashAndSubmit(
 	command => $command,
 	jobName => "parse_hsmetrics",
@@ -187,7 +206,17 @@ if( @hsmetrics ) {
 }
 
 ### Run Rplots ###
-
+my $command = "Rscript $root_dir/bamStats.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
+my $jobID = bashAndSubmit(
+    command => $command,
+    jobName => "bamStats_reports",
+    tmpDir => $tmpDir,
+    outputDir => $output_dir,
+    queue => $queue,
+    queueThreads => $queue_threads,
+    holdJobs => join(",",@picardJobs),
+);
+push(@picardJobs, $jobID);
 
 ### Functions ###
 sub bashAndSubmit {
@@ -207,7 +236,7 @@ sub bashAndSubmit {
     
     if( $args{holdJobs} ){
 	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $args{tmpDir} -e $args{tmpDir} -N $jobID -hold_jid $args{holdJobs} $bashFile";
-    } else { 
+    } else {
 	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $args{tmpDir} -e $args{tmpDir} -N $jobID $bashFile";
     }
     return $jobID;
@@ -245,8 +274,6 @@ $ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
     -baits </hpc/cog_bioinf/ENRICH/PICARD/sorted_SS_exome_v5_S04380110_Covered_picard.bed>
     
     Other:
-    -html
-    -pdf
     -output_dir = <./bamStats>
     -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
     -queue <veryshort>
