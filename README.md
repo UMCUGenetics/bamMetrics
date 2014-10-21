@@ -23,7 +23,8 @@ Tool to generate bam statistics and pdf/html reports. To be used on the UMC hpc 
 - baits baits.bed
     
 ######Other
-- output_dir = ./bamStats
+- output_dir ./bamStats
+- run_name bamStats
 - genome genome.fasta
 - queue veryshort
 - queue_threads 1
