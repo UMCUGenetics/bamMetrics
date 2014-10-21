@@ -72,6 +72,20 @@ if (file.exists(fileName)){
   write.table(summaryTableT, file="WGSMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
 }
 
+### Parse RNAMetrics table
+fileName = paste(output_dir,"RNAMetrics_summary.txt",sep="/")
+rnaMetrics = FALSE
+if (file.exists(fileName)){
+  rnaMetrics = TRUE
+  summaryTable = read.table(file=fileName, sep="\t", header=TRUE, stringsAsFactors=FALSE)
+  summaryTable$sample = as.character(summaryTable$sample)
+  
+  #Transpose and write summaryTable
+  summaryTableT = t(summaryTable)
+  colnames(summaryTableT) = summaryTableT[1,]
+  write.table(summaryTableT, file="RNAMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
+}
+
 ### Plot sample metrics to pdf files.
 for(i in 1:length(samples)) {
   #samplePath = paste(samples[i],"QCStats",samples[i],sep="/")

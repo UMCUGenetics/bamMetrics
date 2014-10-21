@@ -10,15 +10,17 @@ use Pod::Usage;
 # Declare options
 my @hsmetrics;
 my @wgsmetrics;
+my @rnametrics;
 my $output_dir = "";
 
 # Parse options
 GetOptions ("hsmetrics=s" => \@hsmetrics,
 	    "wgsmetrics=s" => \@wgsmetrics,
+	    "rnametrics=s" => \@rnametrics,
 	    "output_dir=s" => \$output_dir
 	    ) or pod2usage(1);
 
-if(! (@hsmetrics || @wgsmetrics) || ! $output_dir) { pod2usage(1) };
+if(! (@hsmetrics || @wgsmetrics || @rnametrics) || ! $output_dir) { pod2usage(1) };
 
 ### Parse hsmetrics files
 if( @hsmetrics ){
@@ -77,6 +79,33 @@ if( @wgsmetrics ){
 
 	my $line = <FILE>; #grep statistics, here we assume one row with statistics.
 	my ($sample) = ($file =~ m/\/(\w+)_WGSMetrics.txt/);
+	print SUMFILE $sample ."\t". $line;
+    }
+    close SUMFILE
+}
+
+### Parse rnametrics files
+if( @rnametrics ){
+    my $filename = $output_dir."/RNAMetrics_summary.txt";
+    open(SUMFILE, ">", $filename) || die ("Can't create $filename");
+    my $printed_header = 0;
+    
+    print "Parsing RNAMetric files \n";
+    foreach my $file (@rnametrics) {
+	print "\t Parsing: ". $file . "\n";
+	open(FILE, $file) || die ("Can't open $file");
+    
+	#Processing headerlines -> beginning with # or empty lines.
+	while(<FILE> =~ /(^\s*#)(.*)/ || <FILE> eq "") {}
+    
+	my $table_header = <FILE>;
+	unless ($printed_header) { #print table header once.
+	    print SUMFILE "sample \t". $table_header;
+	    $printed_header = 1;
+	}
+
+	my $line = <FILE>; #grep statistics, here we assume one row with statistics.
+	my ($sample) = ($file =~ m/\/(\w+)_RNAMetrics.txt/);
 	print SUMFILE $sample ."\t". $line;
     }
     close SUMFILE

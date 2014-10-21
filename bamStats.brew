@@ -75,4 +75,11 @@ Target interval file = <%= cat(gsub("_","\\_",tail(strsplit(unique(summaryTable$
   <%= include_tbl(tableName=summaryTableT[c(3:(nrow(summaryTableT))), ,drop=FALSE]) %>
 \end{landscape}
 <% } %>
+
+<% if (rnaMetrics){ %>
+\begin{landscape}
+  \section*{Coverage statistics}
+  <%= include_tbl(tableName=summaryTableT[c(3:(nrow(summaryTableT))), ,drop=FALSE]) %>
+\end{landscape}
+<% } %>
 \end{document}

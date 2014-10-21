@@ -77,6 +77,7 @@ if(! -e $tmpDir){
 my @picardJobs;
 my @wgsmetrics;
 my @hsmetrics;
+my @rnametrics;
 my @bam_names;
 my $javaMem = $queue_threads * $queue_mem;
 my $picard = " java -Xmx".$javaMem."G -jar ".$picard_path;
@@ -138,6 +139,7 @@ foreach my $bam (@bams) {
     # RNA
     if($rna){
 	my $output = $output_dir."/".$bam_name."_RNAMetrics.txt";
+	push(@rnametrics, $output);
 	if(! -e $output) {
 	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand;
 	    my $jobID = bashAndSubmit(
@@ -181,6 +183,21 @@ if( @wgsmetrics ) {
     my $jobID = bashAndSubmit(
 	command => $command,
 	jobName => "parse_wgsmetrics",
+	tmpDir => $tmpDir,
+	outputDir => $output_dir,
+	queue => $queue,
+	queueThreads => $queue_threads,
+	holdJobs => join(",",@picardJobs),
+	);
+    push(@picardJobs, $jobID);
+}
+if( @rnametrics ) {
+    print "\n Parse RNAMetrics \n";
+    my $command = "perl $root_dir/parsePicardOutput.pl -output_dir ".$output_dir." ";
+    foreach my $rnametric (@rnametrics) { $command .= "-rnametrics $rnametric " }
+    my $jobID = bashAndSubmit(
+	command => $command,
+	jobName => "parse_rnametrics",
 	tmpDir => $tmpDir,
 	outputDir => $output_dir,
 	queue => $queue,

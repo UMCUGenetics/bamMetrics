@@ -65,5 +65,7 @@ if (hsMetrics){
     
     #print(plot_wgs_metrics())
   #}
+} else if (rnaMetrics){
+  print(xtable(summaryTableT[c(3:(nrow(summaryTableT))),]),type='html')
 }
 ```
