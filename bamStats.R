@@ -119,5 +119,7 @@ markdownToHTML("bamStats.md", "bamStats.html", options=c("use_xhml"), stylesheet
 brew(paste(root_dir,"bamStats.brew", sep="/"), "bamStats.tex")
 texi2dvi("bamStats.tex", pdf = TRUE, clean=TRUE)
 
-### Clean R files
+### Clean R files and rename output
 unlink(c("bamStats.tex","bamStats.md","pdfFigures","Rplots.pdf"), recursive=T)
+file.rename("bamStats.html",paste(run_name,"bamStats.html",sep="."))
+file.rename("bamStats.pdf",paste(run_name,"bamStats.pdf",sep="."))
