@@ -291,7 +291,8 @@ $ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
     -baits </hpc/cog_bioinf/ENRICH/PICARD/sorted_SS_exome_v5_S04380110_Covered_picard.bed>
     
     Other:
-    -output_dir = <./bamStats>
+    -output_dir <./bamStats>
+    -run_name <bamStats>
     -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
     -queue <veryshort>
     -queue_threads 1;
