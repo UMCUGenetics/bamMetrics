@@ -95,7 +95,7 @@ foreach my $bam (@bams) {
 	my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	my $jobID = bashAndSubmit(
 	    command => $command,
-	    jobName => "$bam_name\_MultipleMetrics",
+	    jobName => "MultipleMetrics_$bam_name",
 	    tmpDir => $tmpDir,
 	    outputDir => $output_dir,
 	    queue => $queue,
@@ -109,7 +109,7 @@ foreach my $bam (@bams) {
 	my $command = $picard."/EstimateLibraryComplexity.jar INPUT=".$bam." OUTPUT=".$output;
 	my $jobID = bashAndSubmit(
 	    command => $command,
-	    jobName => "$bam_name\_LibComplexity",
+	    jobName => "LibComplexity_$bam_name",
 	    tmpDir => $tmpDir,
 	    outputDir => $output_dir,
 	    queue => $queue,
@@ -125,7 +125,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CollectWgsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "$bam_name\_WGSMetrics",
+		jobName => "WGSMetrics_$bam_name",
 		tmpDir => $tmpDir,
 		outputDir => $output_dir,
 		queue => $queue,
@@ -144,7 +144,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand;
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "$bam_name\_RNAMetrics",
+		jobName => "RNAMetrics_$bam_name",
 		tmpDir => $tmpDir,
 		outputDir => $output_dir,
 		queue => $queue,
@@ -162,7 +162,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CalculateHsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "$bam_name\_HSMetrics",
+		jobName => "HSMetrics_$bam_name",
 		tmpDir => $tmpDir,
 		outputDir => $output_dir,
 		queue => $queue,
