@@ -92,22 +92,26 @@ for(i in 1:length(samples)) {
   sample = samples[i]
   
   pdfOut =  paste("pdfFigures", sample, sep="/")
-  insert_size_metrics = paste(sample,"_MultipleMetrics.txt.insert_size_metrics", sep="")
   quality_by_cycle_metrics = paste(sample,"_MultipleMetrics.txt.quality_by_cycle_metrics", sep="")
   quality_distribution_metrics = paste(sample,"_MultipleMetrics.txt.quality_distribution_metrics", sep="")
   
-  insert_size_metrics.table = read.table(file=insert_size_metrics, skip=10, head=TRUE)
   quality_by_cycle_metrics.table = read.table(file=quality_by_cycle_metrics, head=TRUE)
   quality_distribution_metrics.table = read.table(file=quality_distribution_metrics, head=TRUE)
-  
-  insertSize <- plot_insert_size_metrics()
-  ggsave(paste(pdfOut,"_insertSize.pdf", sep=""), insertSize, dpi = 300)
   
   cycleQuality <- plot_quality_by_cycle_metrics()
   ggsave(paste(pdfOut,"_cycleQuality.pdf", sep=""), cycleQuality, dpi = 300)
   
   qualityDistribution <- plot_quality_distribution_metrics()
   ggsave(paste(pdfOut,"_qualityDistribution.pdf", sep=""), qualityDistribution, dpi = 300)
+  
+  paired_end = FALSE
+  insert_size_metrics = paste(sample,"_MultipleMetrics.txt.insert_size_metrics", sep="")
+  if (file.exists(insert_size_metrics)){
+    paired_end = TRUE
+    insert_size_metrics.table = read.table(file=insert_size_metrics, skip=10, head=TRUE)
+    insertSize <- plot_insert_size_metrics()
+    ggsave(paste(pdfOut,"_insertSize.pdf", sep=""), insertSize, dpi = 300)
+  }
 }
 
 ### Generate .html based on .Rmd file

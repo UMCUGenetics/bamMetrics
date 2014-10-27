@@ -30,7 +30,9 @@
 
 \begin{figure}[H]
   \centering
-  <%= subfloat_graph(0.5, paste("pdfFigures/",samples[i],"_insertSize.pdf", sep="")) %>
+  <% if (paired_end){ %>
+    <%= subfloat_graph(0.5, paste("pdfFigures/",samples[i],"_insertSize.pdf", sep="")) %>
+  <% } %>
   <%= subfloat_graph(0.5, paste("pdfFigures/",samples[i],"_cycleQuality.pdf", sep="")) %>
 \end{figure}
 \begin{figure}[H]

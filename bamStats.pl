@@ -15,6 +15,7 @@ use File::Basename qw( dirname );
 
 # Declare options
 my @bams;
+my $single_end = "";
 
 my $wgs = "";
 my $coverage_cap = 250;
@@ -41,6 +42,7 @@ my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sap
 
 # Parse options
 GetOptions ("bam=s" => \@bams,
+	    "single_end" => \$single_end,
 	    "wgs" => \$wgs,
 	    "coverage_cap=i" => \$coverage_cap,
 	    "rna" => \$rna,
@@ -91,17 +93,32 @@ foreach my $bam (@bams) {
     
     # Multiple metrics
     my $output = $output_dir."/".$bam_name."_MultipleMetrics.txt";
-    if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".insert_size_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
-	my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
-	my $jobID = bashAndSubmit(
-	    command => $command,
-	    jobName => "MultipleMetrics_$bam_name",
-	    tmpDir => $tmpDir,
-	    outputDir => $output_dir,
-	    queue => $queue,
-	    queueThreads => $queue_threads,
-	    );
-	push(@picardJobs, $jobID);
+    if( $single_end ){
+	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
+	    my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    my $jobID = bashAndSubmit(
+		command => $command,
+		jobName => "MultipleMetrics_$bam_name",
+		tmpDir => $tmpDir,
+		outputDir => $output_dir,
+		queue => $queue,
+		queueThreads => $queue_threads,
+		);
+	    push(@picardJobs, $jobID);
+	}
+    } else { #paired
+	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".insert_size_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
+	    my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    my $jobID = bashAndSubmit(
+		command => $command,
+		jobName => "MultipleMetrics_$bam_name",
+		tmpDir => $tmpDir,
+		outputDir => $output_dir,
+		queue => $queue,
+		queueThreads => $queue_threads,
+		);
+	    push(@picardJobs, $jobID);
+	}
     }
     # Library Complexity
     $output = $output_dir."/".$bam_name."_LibComplexity.txt";
@@ -275,7 +292,6 @@ $ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -bam
      
 =head1 OPTIONS
-    
     Whole genome sequencing statistics
      -wgs
      -coverage_cap <250>
@@ -291,12 +307,13 @@ $ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
     -baits </hpc/cog_bioinf/ENRICH/PICARD/sorted_SS_exome_v5_S04380110_Covered_picard.bed>
     
     Other:
+    -single_end (default is paired end)
     -output_dir <./bamStats>
     -run_name <bamStats>
     -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
     -queue <veryshort>
-    -queue_threads 1;
-    -queue_mem 8;
+    -queue_threads 1
+    -queue_mem 8
     -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.119>
 
 =cut

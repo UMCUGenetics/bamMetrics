@@ -51,7 +51,7 @@ if( @hsmetrics ){
 	}
 	
 	my $line = <FILE>; #grep statistics, here we assume one row with statistics.
-	my ($sample) = ($file =~ m/\/(\w+)_HSMetrics.txt/);
+	my ($sample) = ($file =~ m/.+\/(.+)_HSMetrics.txt/);
 	print SUMFILE $sample ."\t". $bait_intervals ."\t". $target_intervals ."\t". $line;
     }
     close SUMFILE;
@@ -78,7 +78,7 @@ if( @wgsmetrics ){
 	}
 
 	my $line = <FILE>; #grep statistics, here we assume one row with statistics.
-	my ($sample) = ($file =~ m/\/(\w+)_WGSMetrics.txt/);
+	my ($sample) = ($file =~ m/.+\/(.+)_WGSMetrics.txt/);
 	print SUMFILE $sample ."\t". $line;
     }
     close SUMFILE
@@ -105,7 +105,8 @@ if( @rnametrics ){
 	}
 
 	my $line = <FILE>; #grep statistics, here we assume one row with statistics.
-	my ($sample) = ($file =~ m/\/(\w+)_RNAMetrics.txt/);
+	my ($sample) = ($file =~ m/.+\/(.+)_RNAMetrics.txt/);
+	print "\n\n $sample \n\n";
 	print SUMFILE $sample ."\t". $line;
     }
     close SUMFILE

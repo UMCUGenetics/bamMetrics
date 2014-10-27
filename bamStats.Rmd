@@ -4,18 +4,20 @@ Sample statistics - `r run_name`
 ```{r echo=FALSE, fig.width=7, fig.height=7}
 for(i in 1:length(samples)) {
   samplePath = paste(output_dir,samples[i],sep="/")
-  insert_size_metrics = paste(samplePath,"_MultipleMetrics.txt.insert_size_metrics", sep="")
-  quality_by_cycle_metrics = paste(samplePath,"_MultipleMetrics.txt.quality_by_cycle_metrics", sep="")
-  quality_distribution_metrics = paste(samplePath,"_MultipleMetrics.txt.quality_distribution_metrics", sep="")
-  
-  insert_size_metrics.table = read.table(file=insert_size_metrics, skip=10, head=TRUE)
-  quality_by_cycle_metrics.table = read.table(file=quality_by_cycle_metrics, head=TRUE)
-  quality_distribution_metrics.table = read.table(file=quality_distribution_metrics, head=TRUE)
-  
+    
   cat(paste("Sample =",samples[i]))
+  if (paired_end){
+    insert_size_metrics = paste(samplePath,"_MultipleMetrics.txt.insert_size_metrics", sep="")
+    insert_size_metrics.table = read.table(file=insert_size_metrics, skip=10, head=TRUE)
+    print(plot_insert_size_metrics())
+  }
   
-  print(plot_insert_size_metrics())
+  quality_by_cycle_metrics = paste(samplePath,"_MultipleMetrics.txt.quality_by_cycle_metrics", sep="")
+  quality_by_cycle_metrics.table = read.table(file=quality_by_cycle_metrics, head=TRUE)
   print(plot_quality_by_cycle_metrics())
+  
+  quality_distribution_metrics = paste(samplePath,"_MultipleMetrics.txt.quality_distribution_metrics", sep="")
+  quality_distribution_metrics.table = read.table(file=quality_distribution_metrics, head=TRUE)
   print(plot_quality_distribution_metrics())
 }
 ```
