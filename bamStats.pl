@@ -287,34 +287,35 @@ __END__
 =head1 SYNOPSIS
 
 $ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
-    
+
     Required:
      -bam
-     
+
 =head1 OPTIONS
+
     Whole genome sequencing statistics
      -wgs
      -coverage_cap <250>
-    
+
     RNA sequencing statistics
-    -rna
-    -ref_flat </hpc/cog_bioinf/data/annelies/RNA_Seq/hg19.refFlat.gz>
-    -strand [NONE, FIRST_READ_TRANSCRIPTION_STRAND, SECOND_READ_TRANSCRIPTION_STRAND]
-    
+     -rna
+     -ref_flat </hpc/cog_bioinf/data/annelies/RNA_Seq/hg19.refFlat.gz>
+     -strand [NONE, FIRST_READ_TRANSCRIPTION_STRAND, SECOND_READ_TRANSCRIPTION_STRAND]
+
     Capture sequencing statistics (exome)
-    -capture
-    -targets </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/sorted_Homo_sapiens.GRCh37.74_nopseudo_noRNA_CDS_picard.bed>
-    -baits </hpc/cog_bioinf/ENRICH/PICARD/sorted_SS_exome_v5_S04380110_Covered_picard.bed>
-    
+     -capture
+     -targets </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/sorted_Homo_sapiens.GRCh37.74_nopseudo_noRNA_CDS_picard.bed>
+     -baits </hpc/cog_bioinf/ENRICH/PICARD/sorted_SS_exome_v5_S04380110_Covered_picard.bed>
+
     Other:
-    -single_end (default is paired end)
-    -output_dir <./bamStats>
-    -run_name <bamStats>
-    -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
-    -queue <veryshort>
-    -queue_threads 1
-    -queue_mem 8
-    -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.119>
+     -single_end (default is paired end)
+     -output_dir <./bamStats>
+     -run_name <bamStats>
+     -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
+     -queue <veryshort>
+     -queue_threads 1
+     -queue_mem 8
+     -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.119>
 
 =cut
 
