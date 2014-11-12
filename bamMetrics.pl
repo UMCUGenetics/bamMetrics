@@ -292,7 +292,6 @@ sub bashAndSubmit {
     
     if($args{log_output}) {
 	$log_output = $args{log_output};
-	print "\n\n" . $log_output . "\n\n";
     }
     
     open BASH, ">$bashFile" or die "cannot open file $bashFile\n";
@@ -303,10 +302,8 @@ sub bashAndSubmit {
     
     if( $args{holdJobs} ){
 	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
-	print "\n\n" . $log_output . "\n\n";
     } else {
 	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $log_output -e $log_output -N $jobID $bashFile";
-	print "\n\n" . $log_output . "\n\n";
     }
     return $jobID;
 }
