@@ -40,6 +40,9 @@ my $queue_mem = 8;
 my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.119";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
+# Development settings
+my $debug = "";
+
 # Parse options
 GetOptions ("bam=s" => \@bams,
 	    "single_end" => \$single_end,
@@ -59,7 +62,8 @@ GetOptions ("bam=s" => \@bams,
 	    "queue_threads=i" =>  \$queue_threads,
 	    "queue_mem=i" => \$queue_mem,
 	    "picard_path=s" => \$picard_path,
-	    "genome=s" => \$genome
+	    "genome=s" => \$genome,
+	    "debug" => \$debug
 	    ) or pod2usage(1);
 
 # Check user input
@@ -248,16 +252,32 @@ if( @hsmetrics ) {
 
 ### Run Rplots ###
 my $command = "Rscript $root_dir/bamStats.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
-#my $jobID = bashAndSubmit(
-#    command => $command,
-#    jobName => "bamStats_reports",
-#    tmpDir => $tmp_dir,
-#    outputDir => $output_dir,
-#    queue => $queue,
-#    queueThreads => $queue_threads,
-#    holdJobs => join(",",@picardJobs),
-#);
-#push(@picardJobs, $jobID);
+my $jobID = bashAndSubmit(
+    command => $command,
+    jobName => "bamStats_reports",
+    tmpDir => $tmp_dir,
+    outputDir => $output_dir,
+    queue => $queue,
+    queueThreads => $queue_threads,
+    holdJobs => join(",",@picardJobs),
+);
+push(@picardJobs, $jobID);
+
+### Clean tmp
+if(! $debug){
+    my $command = "rm -r $tmp_dir";
+    my $jobID = bashAndSubmit(
+	command => $command,
+	jobName => "bamStats_clean",
+	tmpDir => $tmp_dir,
+	outputDir => $output_dir,
+	queue => $queue,
+	queueThreads => $queue_threads,
+	holdJobs => join(",",@picardJobs),
+	log_output => "/dev/null",
+    );
+    push(@picardJobs, $jobID);
+}
 
 ### Functions ###
 sub bashAndSubmit {
@@ -268,6 +288,12 @@ sub bashAndSubmit {
 
     my $jobID = $args{jobName}."_".get_job_id();
     my $bashFile = $args{tmpDir}."/".$jobID.".sh";
+    my $log_output = $args{tmpDir};
+    
+    if($args{log_output}) {
+	$log_output = $args{log_output};
+	print "\n\n" . $log_output . "\n\n";
+    }
     
     open BASH, ">$bashFile" or die "cannot open file $bashFile\n";
     print BASH "#!/bin/bash\n\n";
@@ -276,9 +302,11 @@ sub bashAndSubmit {
     close BASH;
     
     if( $args{holdJobs} ){
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $args{tmpDir} -e $args{tmpDir} -N $jobID -hold_jid $args{holdJobs} $bashFile";
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
+	print "\n\n" . $log_output . "\n\n";
     } else {
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $args{tmpDir} -e $args{tmpDir} -N $jobID $bashFile";
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $log_output -e $log_output -N $jobID $bashFile";
+	print "\n\n" . $log_output . "\n\n";
     }
     return $jobID;
 }
