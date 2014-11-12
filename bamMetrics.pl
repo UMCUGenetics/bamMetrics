@@ -1,6 +1,6 @@
 #!usr/bin/perl
 ### Robert Ernst
-### bamStats
+### bamMetrics
 ### Tool for generating html and/or pdf reports with bam statistics
 
 use strict;
@@ -30,8 +30,8 @@ my $baits = "/hpc/cog_bioinf/ENRICH/PICARD/sorted_SS_exome_v5_S04380110_Covered_
 
 #my $pdf = "";
 #my $html = "";
-my $output_dir = cwd()."/bamStats";
-my $run_name = "bamStats";
+my $output_dir = cwd()."/bamMetrics";
+my $run_name = "bamMetrics";
 
 # Picard and Cluster settings
 my $queue = "veryshort";
@@ -251,10 +251,10 @@ if( @hsmetrics ) {
 }
 
 ### Run Rplots ###
-my $command = "Rscript $root_dir/bamStats.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
+my $command = "Rscript $root_dir/bamMetrics.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
 my $jobID = bashAndSubmit(
     command => $command,
-    jobName => "bamStats_reports",
+    jobName => "bamMetrics_reports",
     tmpDir => $tmp_dir,
     outputDir => $output_dir,
     queue => $queue,
@@ -268,7 +268,7 @@ if(! $debug){
     my $command = "rm -r $tmp_dir";
     my $jobID = bashAndSubmit(
 	command => $command,
-	jobName => "bamStats_clean",
+	jobName => "bamMetrics_clean",
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
@@ -282,7 +282,7 @@ if(! $debug){
 ### Functions ###
 sub bashAndSubmit {
     my %args = (
-	jobName => "bamStats",
+	jobName => "bamMetrics",
 	holdJobs => "",
 	@_);
 
@@ -321,7 +321,7 @@ __END__
 
 =head1 SYNOPSIS
 
-$ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
+$ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
 
     Required:
      -bam
@@ -344,8 +344,8 @@ $ perl bamStats.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
 
     Other:
      -single_end (default is paired end)
-     -output_dir <./bamStats>
-     -run_name <bamStats>
+     -output_dir <./bamMetrics>
+     -run_name <bamMetrics>
      -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
      -queue <veryshort>
      -queue_threads 1

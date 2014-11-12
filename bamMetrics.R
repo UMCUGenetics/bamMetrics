@@ -8,18 +8,18 @@ library(GetoptLong)
 GetoptLong(c(
   "samples=s@", "Sample names",
   "output_dir=s", "Output directory",
-  "root_dir=s", "bamStats root directory",
-  "run_name=s", "Run name to use as title for bamStats output"
+  "root_dir=s", "bamMetrics root directory",
+  "run_name=s", "Run name to use as title for bamMetrics output"
 ))
 
 #debug
 #samples = c("CONTROLP25","CONTROLP26") #debug
-#root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamStats/" #debug
-#output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testData/bams/bamStats" #debug
-#run_name = "bamStats"
+#root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamMetrics/" #debug
+#output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testData/bams/bamMetrics" #debug
+#run_name = "bamMetrics"
 
 ### Load functions 
-source(paste(root_dir,"bamStats_include.R",sep="/"))
+source(paste(root_dir,"bamMetrics_include.R",sep="/"))
 
 ### Set wd and create temp output folders
 setwd(output_dir)
@@ -115,15 +115,15 @@ for(i in 1:length(samples)) {
 }
 
 ### Generate .html based on .Rmd file
-options(knitr.unnamed.chunk.label = "bamStats")
-knit(paste(root_dir,"bamStats.Rmd", sep="/"),quiet=TRUE)
-markdownToHTML("bamStats.md", "bamStats.html", options=c("use_xhml"), stylesheet=paste(root_dir,"bamStats_html.css",sep="/"))
+options(knitr.unnamed.chunk.label = "bamMetrics")
+knit(paste(root_dir,"bamMetrics.Rmd", sep="/"),quiet=TRUE)
+markdownToHTML("bamMetrics.md", "bamMetrics.html", options=c("use_xhml"), stylesheet=paste(root_dir,"bamMetrics_html.css",sep="/"))
 
 ### Generate .pdf based on .brew file
-brew(paste(root_dir,"bamStats.brew", sep="/"), "bamStats.tex")
-texi2dvi("bamStats.tex", pdf = TRUE, clean=TRUE)
+brew(paste(root_dir,"bamMetrics.brew", sep="/"), "bamMetrics.tex")
+texi2dvi("bamMetrics.tex", pdf = TRUE, clean=TRUE)
 
 ### Clean R files and rename output
-unlink(c("bamStats.tex","bamStats.md","pdfFigures","Rplots.pdf"), recursive=T)
-file.rename("bamStats.html",paste(run_name,"bamStats.html",sep="."))
-file.rename("bamStats.pdf",paste(run_name,"bamStats.pdf",sep="."))
+unlink(c("bamMetrics.tex","bamMetrics.md","pdfFigures","Rplots.pdf"), recursive=T)
+file.rename("bamMetrics.html",paste(run_name,"bamMetrics.html",sep="."))
+file.rename("bamMetrics.pdf",paste(run_name,"bamMetrics.pdf",sep="."))

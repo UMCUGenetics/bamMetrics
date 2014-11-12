@@ -116,6 +116,6 @@ __END__
 
 =head1 SYNOPSIS
 
-$ perl bamStats.pl -output_dir /path/to/output -hsmetrics <hsmetrics.txt> -wgsmetrics <wgsmetrics.txt>
+$ perl parsePicardOutput.pl -output_dir /path/to/output -hsmetrics <hsmetrics.txt> -wgsmetrics <wgsmetrics.txt>
 
 =cut
