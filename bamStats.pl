@@ -70,9 +70,9 @@ if( !@bams ) { pod2usage(1) };
 if(! -e $output_dir){
     mkdir($output_dir) or die "Could not create directory: $output_dir";
 }
-my $tmpDir = $output_dir."/tmp";
-if(! -e $tmpDir){
-    mkdir($tmpDir) or die "Could not create directory: $tmpDir";
+my $tmp_dir = $output_dir."/tmp";
+if(! -e $tmp_dir){
+    mkdir($tmp_dir) or die "Could not create directory: $tmp_dir";
 }
 
 ### Run picard tools ###
@@ -85,22 +85,29 @@ my $javaMem = $queue_threads * $queue_mem;
 my $picard = " java -Xmx".$javaMem."G -jar ".$picard_path;
 
 foreach my $bam (@bams) {
+    #Parse bam file name
     $bam = abs_path($bam);
     my $bam_name = (split("/",$bam))[-1];
     $bam_name =~ s/.bam//;
     push(@bam_names, $bam_name);
     print "\n$bam_name \t $bam \n";
-    
+
+    #Create picard output folder per bam file
+    my $bam_dir = $output_dir."/".$bam_name;
+    if(! -e $bam_dir){
+	mkdir($bam_dir) or die "Could not create directory: $bam_dir";
+    }
+
     # Multiple metrics
-    my $output = $output_dir."/".$bam_name."_MultipleMetrics.txt";
+    my $output = $bam_dir."/".$bam_name."_MultipleMetrics.txt";
     if( $single_end ){
 	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
 	    my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "MultipleMetrics_$bam_name",
-		tmpDir => $tmpDir,
-		outputDir => $output_dir,
+		tmpDir => $tmp_dir,
+		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
 		);
@@ -112,8 +119,8 @@ foreach my $bam (@bams) {
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "MultipleMetrics_$bam_name",
-		tmpDir => $tmpDir,
-		outputDir => $output_dir,
+		tmpDir => $tmp_dir,
+		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
 		);
@@ -121,14 +128,14 @@ foreach my $bam (@bams) {
 	}
     }
     # Library Complexity
-    $output = $output_dir."/".$bam_name."_LibComplexity.txt";
+    $output = $bam_dir."/".$bam_name."_LibComplexity.txt";
     if(! -e $output) {
 	my $command = $picard."/EstimateLibraryComplexity.jar INPUT=".$bam." OUTPUT=".$output;
 	my $jobID = bashAndSubmit(
 	    command => $command,
 	    jobName => "LibComplexity_$bam_name",
-	    tmpDir => $tmpDir,
-	    outputDir => $output_dir,
+	    tmpDir => $tmp_dir,
+	    outputDir => $bam_dir,
 	    queue => $queue,
 	    queueThreads => $queue_threads,
 	    );
@@ -136,15 +143,15 @@ foreach my $bam (@bams) {
     }
     # WGS
     if($wgs){
-	my $output = $output_dir."/".$bam_name."_WGSMetrics.txt";
+	my $output = $bam_dir."/".$bam_name."_WGSMetrics.txt";
 	push(@wgsmetrics, $output);
 	if(! -e $output) {
 	    my $command = $picard."/CollectWgsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "WGSMetrics_$bam_name",
-		tmpDir => $tmpDir,
-		outputDir => $output_dir,
+		tmpDir => $tmp_dir,
+		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
 		);
@@ -155,15 +162,15 @@ foreach my $bam (@bams) {
 
     # RNA
     if($rna){
-	my $output = $output_dir."/".$bam_name."_RNAMetrics.txt";
+	my $output = $bam_dir."/".$bam_name."_RNAMetrics.txt";
 	push(@rnametrics, $output);
 	if(! -e $output) {
 	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "RNAMetrics_$bam_name",
-		tmpDir => $tmpDir,
-		outputDir => $output_dir,
+		tmpDir => $tmp_dir,
+		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
 		);
@@ -173,15 +180,15 @@ foreach my $bam (@bams) {
 
     # CAPTURE
     if($capture){
-	my $output = $output_dir."/".$bam_name."_HSMetrics.txt";
+	my $output = $bam_dir."/".$bam_name."_HSMetrics.txt";
 	push(@hsmetrics, $output);
 	if(! -e $output) {
 	    my $command = $picard."/CalculateHsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "HSMetrics_$bam_name",
-		tmpDir => $tmpDir,
-		outputDir => $output_dir,
+		tmpDir => $tmp_dir,
+		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
 		);
@@ -200,7 +207,7 @@ if( @wgsmetrics ) {
     my $jobID = bashAndSubmit(
 	command => $command,
 	jobName => "parse_wgsmetrics",
-	tmpDir => $tmpDir,
+	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
 	queueThreads => $queue_threads,
@@ -215,7 +222,7 @@ if( @rnametrics ) {
     my $jobID = bashAndSubmit(
 	command => $command,
 	jobName => "parse_rnametrics",
-	tmpDir => $tmpDir,
+	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
 	queueThreads => $queue_threads,
@@ -230,7 +237,7 @@ if( @hsmetrics ) {
     my $jobID = bashAndSubmit(
 	command => $command,
 	jobName => "parse_hsmetrics",
-	tmpDir => $tmpDir,
+	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
 	queueThreads => $queue_threads,
@@ -241,16 +248,16 @@ if( @hsmetrics ) {
 
 ### Run Rplots ###
 my $command = "Rscript $root_dir/bamStats.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
-my $jobID = bashAndSubmit(
-    command => $command,
-    jobName => "bamStats_reports",
-    tmpDir => $tmpDir,
-    outputDir => $output_dir,
-    queue => $queue,
-    queueThreads => $queue_threads,
-    holdJobs => join(",",@picardJobs),
-);
-push(@picardJobs, $jobID);
+#my $jobID = bashAndSubmit(
+#    command => $command,
+#    jobName => "bamStats_reports",
+#    tmpDir => $tmp_dir,
+#    outputDir => $output_dir,
+#    queue => $queue,
+#    queueThreads => $queue_threads,
+#    holdJobs => join(",",@picardJobs),
+#);
+#push(@picardJobs, $jobID);
 
 ### Functions ###
 sub bashAndSubmit {

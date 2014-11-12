@@ -15,7 +15,7 @@ GetoptLong(c(
 #debug
 #samples = c("CONTROLP25","CONTROLP26") #debug
 #root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamStats/" #debug
-#output_dir = "/hpc/cog_bioinf/data/robert/scripts/bamStats/bamStats" #debug
+#output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testData/bams/bamStats" #debug
 #run_name = "bamStats"
 
 ### Load functions 
@@ -92,8 +92,8 @@ for(i in 1:length(samples)) {
   sample = samples[i]
   
   pdfOut =  paste("pdfFigures", sample, sep="/")
-  quality_by_cycle_metrics = paste(sample,"_MultipleMetrics.txt.quality_by_cycle_metrics", sep="")
-  quality_distribution_metrics = paste(sample,"_MultipleMetrics.txt.quality_distribution_metrics", sep="")
+  quality_by_cycle_metrics = paste(sample,"/",sample,"_MultipleMetrics.txt.quality_by_cycle_metrics", sep="")
+  quality_distribution_metrics = paste(sample,"/",sample,"_MultipleMetrics.txt.quality_distribution_metrics", sep="")
   
   quality_by_cycle_metrics.table = read.table(file=quality_by_cycle_metrics, head=TRUE)
   quality_distribution_metrics.table = read.table(file=quality_distribution_metrics, head=TRUE)
@@ -105,7 +105,7 @@ for(i in 1:length(samples)) {
   ggsave(paste(pdfOut,"_qualityDistribution.pdf", sep=""), qualityDistribution, dpi = 300)
   
   paired_end = FALSE
-  insert_size_metrics = paste(sample,"_MultipleMetrics.txt.insert_size_metrics", sep="")
+  insert_size_metrics = paste(sample,"/",sample,"_MultipleMetrics.txt.insert_size_metrics", sep="")
   if (file.exists(insert_size_metrics)){
     paired_end = TRUE
     insert_size_metrics.table = read.table(file=insert_size_metrics, skip=10, head=TRUE)
