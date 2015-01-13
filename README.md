@@ -16,6 +16,7 @@ Tool to generate bam statistics and pdf/html reports. To be used on the UMC hpc 
 - rna
 - ref_flat refFlat.gz
 - strand [NONE, FIRST_READ_TRANSCRIPTION_STRAND, SECOND_READ_TRANSCRIPTION_STRAND]
+- ribosomal_intervals rRNA.intervallist
     
 ######Capture sequencing statistics (exome)
 - capture

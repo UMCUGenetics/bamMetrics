@@ -23,6 +23,7 @@ my $coverage_cap = 250;
 my $rna = "";
 my $ref_flat = "/hpc/cog_bioinf/data/annelies/RNA_Seq/hg19.refFlat.gz";
 my $strand = "SECOND_READ_TRANSCRIPTION_STRAND";
+my $rib_interval = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.rRNA.intervallist";
 
 my $capture = "";
 my $targets = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/sorted_Homo_sapiens.GRCh37.74_nopseudo_noRNA_CDS_picard.bed";
@@ -51,6 +52,7 @@ GetOptions ("bam=s" => \@bams,
 	    "rna" => \$rna,
 	    "ref_flat=s" => \$ref_flat,
 	    "strand=s" => \$strand,
+	    "ribosomal_intervals=s" => \$rib_interval,
 	    "capture" => \$capture,
 	    "targets=s" => \$targets,
 	    "baits=s" => \$baits,
@@ -169,7 +171,7 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_RNAMetrics.txt";
 	push(@rnametrics, $output);
 	if(! -e $output) {
-	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand;
+	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand." RIBOSOMAL_INTERVALS=".$rib_interval;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "RNAMetrics_$bam_name",
@@ -333,6 +335,7 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -rna
      -ref_flat </hpc/cog_bioinf/data/annelies/RNA_Seq/hg19.refFlat.gz>
      -strand [NONE, FIRST_READ_TRANSCRIPTION_STRAND, SECOND_READ_TRANSCRIPTION_STRAND]
+     -ribosomal_intervals </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.rRNA.intervallist>
 
     Capture sequencing statistics (exome)
      -capture
