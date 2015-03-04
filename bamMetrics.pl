@@ -111,7 +111,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "MultipleMetrics_$bam_name",
+		jobName => "MultipleMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
@@ -124,7 +124,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "MultipleMetrics_$bam_name",
+		jobName => "MultipleMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
@@ -139,7 +139,7 @@ foreach my $bam (@bams) {
 	my $command = $picard."/EstimateLibraryComplexity.jar INPUT=".$bam." OUTPUT=".$output;
 	my $jobID = bashAndSubmit(
 	    command => $command,
-	    jobName => "LibComplexity_$bam_name",
+	    jobName => "LibComplexity_".$bam_name."_".get_job_id(),
 	    tmpDir => $tmp_dir,
 	    outputDir => $bam_dir,
 	    queue => $queue,
@@ -155,7 +155,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CollectWgsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "WGSMetrics_$bam_name",
+		jobName => "WGSMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
@@ -174,7 +174,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand." RIBOSOMAL_INTERVALS=".$rib_interval;
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "RNAMetrics_$bam_name",
+		jobName => "RNAMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
@@ -192,7 +192,7 @@ foreach my $bam (@bams) {
 	    my $command = $picard."/CalculateHsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
 	    my $jobID = bashAndSubmit(
 		command => $command,
-		jobName => "HSMetrics_$bam_name",
+		jobName => "HSMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
@@ -212,7 +212,7 @@ if( @wgsmetrics ) {
     foreach my $wgsmetric (@wgsmetrics) { $command .= "-wgsmetrics $wgsmetric " }
     my $jobID = bashAndSubmit(
 	command => $command,
-	jobName => "parse_wgsmetrics",
+	jobName => "parse_wgsmetrics_".get_job_id(),
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
@@ -227,7 +227,7 @@ if( @rnametrics ) {
     foreach my $rnametric (@rnametrics) { $command .= "-rnametrics $rnametric " }
     my $jobID = bashAndSubmit(
 	command => $command,
-	jobName => "parse_rnametrics",
+	jobName => "parse_rnametrics_".get_job_id(),
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
@@ -242,7 +242,7 @@ if( @hsmetrics ) {
     foreach my $hsmetric (@hsmetrics) { $command .= "-hsmetrics $hsmetric " }
     my $jobID = bashAndSubmit(
 	command => $command,
-	jobName => "parse_hsmetrics",
+	jobName => "parse_hsmetrics_".get_job_id(),
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
@@ -256,7 +256,7 @@ if( @hsmetrics ) {
 my $command = "Rscript $root_dir/bamMetrics.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
 my $jobID = bashAndSubmit(
     command => $command,
-    jobName => "bamMetrics_reports",
+    jobName => "bamMetrics_report_".$run_name,
     tmpDir => $tmp_dir,
     outputDir => $output_dir,
     queue => $queue,
@@ -270,7 +270,7 @@ if(! $debug){
     my $command = "rm -r $tmp_dir";
     my $jobID = bashAndSubmit(
 	command => $command,
-	jobName => "bamMetrics_clean",
+	jobName => "bamMetrics_clean_".get_job_id(),
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
@@ -288,7 +288,7 @@ sub bashAndSubmit {
 	holdJobs => "",
 	@_);
 
-    my $jobID = $args{jobName}."_".get_job_id();
+    my $jobID = $args{jobName};
     my $bashFile = $args{tmpDir}."/".$jobID.".sh";
     my $log_output = $args{tmpDir};
     
