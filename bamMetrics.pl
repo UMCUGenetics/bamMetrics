@@ -38,6 +38,7 @@ my $run_name = "bamMetrics";
 my $queue = "veryshort";
 my $queue_threads = 1;
 my $queue_mem = 8;
+my $queue_reserve = "";
 my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.119";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
@@ -63,6 +64,7 @@ GetOptions ("bam=s" => \@bams,
 	    "queue=s" => \$queue,
 	    "queue_threads=i" =>  \$queue_threads,
 	    "queue_mem=i" => \$queue_mem,
+	    "queue_reserve" => \$queue_reserve,
 	    "picard_path=s" => \$picard_path,
 	    "genome=s" => \$genome,
 	    "debug" => \$debug
@@ -116,6 +118,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
+		queueReserve => $queue_reserve,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -129,6 +132,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
+		queueReserve => $queue_reserve,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -144,6 +148,7 @@ foreach my $bam (@bams) {
 	    outputDir => $bam_dir,
 	    queue => $queue,
 	    queueThreads => $queue_threads,
+	    queueReserve => $queue_reserve,
 	    );
 	push(@picardJobs, $jobID);
     }
@@ -160,6 +165,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
+		queueReserve => $queue_reserve,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -179,6 +185,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
+		queueReserve => $queue_reserve,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -197,6 +204,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueThreads => $queue_threads,
+		queueReserve => $queue_reserve,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -217,6 +225,7 @@ if( @wgsmetrics ) {
 	outputDir => $output_dir,
 	queue => $queue,
 	queueThreads => $queue_threads,
+	queueReserve => $queue_reserve,
 	holdJobs => join(",",@picardJobs),
 	);
     push(@picardJobs, $jobID);
@@ -232,6 +241,7 @@ if( @rnametrics ) {
 	outputDir => $output_dir,
 	queue => $queue,
 	queueThreads => $queue_threads,
+	queueReserve => $queue_reserve,
 	holdJobs => join(",",@picardJobs),
 	);
     push(@picardJobs, $jobID);
@@ -247,6 +257,7 @@ if( @hsmetrics ) {
 	outputDir => $output_dir,
 	queue => $queue,
 	queueThreads => $queue_threads,
+	queueReserve => $queue_reserve,
 	holdJobs => join(",",@picardJobs),
 	);
     push(@picardJobs, $jobID);
@@ -261,6 +272,7 @@ my $jobID = bashAndSubmit(
     outputDir => $output_dir,
     queue => $queue,
     queueThreads => $queue_threads,
+    queueReserve => $queue_reserve,
     holdJobs => join(",",@picardJobs),
 );
 push(@picardJobs, $jobID);
@@ -275,6 +287,7 @@ if(! $debug){
 	outputDir => $output_dir,
 	queue => $queue,
 	queueThreads => $queue_threads,
+	queueReserve => $queue_reserve,
 	holdJobs => join(",",@picardJobs),
 	log_output => "/dev/null",
     );
@@ -296,6 +309,13 @@ sub bashAndSubmit {
 	$log_output = $args{log_output};
     }
     
+    if($args{queueReserve}){
+	$queue_reserve = "yes"
+    } else {
+	$queue_reserve = "no"
+    }
+    
+    
     open BASH, ">$bashFile" or die "cannot open file $bashFile\n";
     print BASH "#!/bin/bash\n\n";
     print BASH "cd $args{outputDir}\n";
@@ -303,9 +323,9 @@ sub bashAndSubmit {
     close BASH;
     
     if( $args{holdJobs} ){
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
     } else {
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -o $log_output -e $log_output -N $jobID $bashFile";
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -o $log_output -e $log_output -N $jobID $bashFile";
     }
     return $jobID;
 }
@@ -347,6 +367,7 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -output_dir <./bamMetrics>
      -run_name <bamMetrics>
      -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
+     -queue_reserve (default is no node reservation)
      -queue <veryshort>
      -queue_threads 1
      -queue_mem 8
