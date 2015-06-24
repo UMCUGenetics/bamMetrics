@@ -39,7 +39,7 @@ my $queue = "veryshort";
 my $queue_threads = 1;
 my $queue_mem = 8;
 my $queue_reserve = "";
-my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.119";
+my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.128";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
 # Development settings
@@ -90,7 +90,7 @@ my @hsmetrics;
 my @rnametrics;
 my @bam_names;
 my $javaMem = $queue_threads * $queue_mem;
-my $picard = " java -Xmx".$javaMem."G -jar ".$picard_path;
+my $picard = " java -Xmx".$javaMem."G -jar ".$picard_path."/picard.jar";
 
 foreach my $bam (@bams) {
     #Parse bam file name
@@ -110,7 +110,7 @@ foreach my $bam (@bams) {
     my $output = $bam_dir."/".$bam_name."_MultipleMetrics.txt";
     if( $single_end ){
 	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
-	    my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    my $command = $picard." CollectMultipleMetrics R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "MultipleMetrics_".$bam_name."_".get_job_id(),
@@ -124,7 +124,7 @@ foreach my $bam (@bams) {
 	}
     } else { #paired
 	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".insert_size_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
-	    my $command = $picard."/CollectMultipleMetrics.jar R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    my $command = $picard." CollectMultipleMetrics R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "MultipleMetrics_".$bam_name."_".get_job_id(),
@@ -140,7 +140,7 @@ foreach my $bam (@bams) {
     # Library Complexity
     $output = $bam_dir."/".$bam_name."_LibComplexity.txt";
     if(! -e $output) {
-	my $command = $picard."/EstimateLibraryComplexity.jar INPUT=".$bam." OUTPUT=".$output;
+	my $command = $picard." EstimateLibraryComplexity INPUT=".$bam." OUTPUT=".$output;
 	my $jobID = bashAndSubmit(
 	    command => $command,
 	    jobName => "LibComplexity_".$bam_name."_".get_job_id(),
@@ -157,7 +157,7 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_WGSMetrics.txt";
 	push(@wgsmetrics, $output);
 	if(! -e $output) {
-	    my $command = $picard."/CollectWgsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
+	    my $command = $picard." CollectWgsMetrics R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "WGSMetrics_".$bam_name."_".get_job_id(),
@@ -177,7 +177,7 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_RNAMetrics.txt";
 	push(@rnametrics, $output);
 	if(! -e $output) {
-	    my $command = $picard."/CollectRnaSeqMetrics.jar R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand." RIBOSOMAL_INTERVALS=".$rib_interval;
+	    my $command = $picard." CollectRnaSeqMetrics R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand." RIBOSOMAL_INTERVALS=".$rib_interval;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "RNAMetrics_".$bam_name."_".get_job_id(),
@@ -196,7 +196,7 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_HSMetrics.txt";
 	push(@hsmetrics, $output);
 	if(! -e $output) {
-	    my $command = $picard."/CalculateHsMetrics.jar R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
+	    my $command = $picard." CalculateHsMetrics R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "HSMetrics_".$bam_name."_".get_job_id(),
@@ -371,7 +371,7 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -queue <veryshort>
      -queue_threads 1
      -queue_mem 8
-     -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.119>
+     -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.128>
 
 =cut
 
