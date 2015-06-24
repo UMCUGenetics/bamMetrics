@@ -19,6 +19,8 @@ my $single_end = "";
 
 my $wgs = "";
 my $coverage_cap = 250;
+my $min_map_qual = 20;
+my $min_base_qual = 10;
 
 my $rna = "";
 my $ref_flat = "/hpc/cog_bioinf/data/annelies/RNA_Seq/hg19.refFlat.gz";
@@ -50,6 +52,8 @@ GetOptions ("bam=s" => \@bams,
 	    "single_end" => \$single_end,
 	    "wgs" => \$wgs,
 	    "coverage_cap=i" => \$coverage_cap,
+	    "min_map_qual=i" => \$min_map_qual,
+	    "min_base_qual=i" => \$min_base_qual,
 	    "rna" => \$rna,
 	    "ref_flat=s" => \$ref_flat,
 	    "strand=s" => \$strand,
@@ -157,7 +161,7 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_WGSMetrics.txt";
 	push(@wgsmetrics, $output);
 	if(! -e $output) {
-	    my $command = $picard." CollectWgsMetrics R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=1 COVERAGE_CAP=".$coverage_cap;
+	    my $command = $picard." CollectWgsMetrics R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=".$min_map_qual." MINIMUM_BASE_QUALITY=".$min_base_qual." COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "WGSMetrics_".$bam_name."_".get_job_id(),
@@ -350,6 +354,8 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
     Whole genome sequencing statistics
      -wgs
      -coverage_cap <250>
+     -min_base_qual <10>
+     -min_map_qual <20>
 
     RNA sequencing statistics
      -rna
