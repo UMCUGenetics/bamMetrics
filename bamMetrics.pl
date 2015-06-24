@@ -354,8 +354,8 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
     Whole genome sequencing statistics
      -wgs
      -coverage_cap <250>
-     -min_base_qual <10>
-     -min_map_qual <20>
+     -min_base_qual <10> (gatk default)
+     -min_map_qual <20> (gatk default)
 
     RNA sequencing statistics
      -rna
