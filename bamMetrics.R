@@ -13,7 +13,7 @@ GetoptLong(c(
 ))
 
 #debug
-#samples = c("CONTROLP25","CONTROLP26") #debug
+#samples = c("CONTROLP25_dedup","CONTROLP26_dedup") #debug
 #root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamMetrics/" #debug
 #output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testData/bams/bamMetrics" #debug
 #run_name = "bamMetrics"
@@ -111,6 +111,17 @@ for(i in 1:length(samples)) {
     insert_size_metrics.table = read.table(file=insert_size_metrics, skip=10, head=TRUE)
     insertSize <- plot_insert_size_metrics()
     ggsave(paste(pdfOut,"_insertSize.pdf", sep=""), insertSize, dpi = 300)
+  }
+  gc_metrics = FALSE
+  gc_bias_metrics = paste(sample,"/",sample,"_MultipleMetrics.txt.gc_bias.detail_metrics", sep="")
+  if (file.exists(gc_bias_metrics)){
+    gc_metrics = TRUE
+    gc_bias_metrics.table = read.table(file=gc_bias_metrics, head=TRUE, sep="\t", nrows=101)
+    gcMetricsBaseQuality <- plot_gcMetricsBaseQuality()
+    gcMetricsNormalizedCoverage <- plot_gcMetricsNormalizedCoverage()
+    
+    ggsave(paste(pdfOut,"_gcMetricsBaseQuality.pdf", sep=""), gcMetricsBaseQuality, dpi = 300)
+    ggsave(paste(pdfOut,"_gcMetricsNormalizedCoverage.pdf", sep=""), gcMetricsNormalizedCoverage, dpi = 300)
   }
 }
 

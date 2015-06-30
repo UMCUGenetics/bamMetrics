@@ -39,6 +39,13 @@
   \centering
   <%= subfloat_graph(0.5, paste("pdfFigures/",samples[i],"_qualityDistribution.pdf", sep="")) %>
 \end{figure}
+\begin{figure}[H]
+  \centering
+  <% if (gc_metrics){ %>
+    <%= subfloat_graph(0.5, paste("pdfFigures/",samples[i],"_gcMetricsBaseQuality.pdf", sep="")) %>
+    <%= subfloat_graph(0.5, paste("pdfFigures/",samples[i],"_gcMetricsNormalizedCoverage.pdf", sep="")) %>
+  <% } %>
+\end{figure}
 
 <% } %>
 \pagebreak

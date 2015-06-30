@@ -115,6 +115,9 @@ foreach my $bam (@bams) {
     if( $single_end ){
 	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
 	    my $command = $picard." CollectMultipleMetrics R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    if($wgs){
+		$command .= " PROGRAM=CollectGcBiasMetrics";
+	    }
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "MultipleMetrics_".$bam_name."_".get_job_id(),
@@ -129,6 +132,9 @@ foreach my $bam (@bams) {
     } else { #paired
 	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".insert_size_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
 	    my $command = $picard." CollectMultipleMetrics R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    if($wgs){
+		$command .= " PROGRAM=CollectGcBiasMetrics";
+	    }
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "MultipleMetrics_".$bam_name."_".get_job_id(),

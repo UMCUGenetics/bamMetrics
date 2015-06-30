@@ -27,7 +27,7 @@ GetRandomColorSet <- function(nsamples) {
 plot_insert_size_metrics <- function(){
   ggplot(insert_size_metrics.table, aes(x=insert_size, y=All_Reads.fr_count)) + 
     geom_bar(stat="identity", width=1, fill="#0072B2") +
-    xlab("Insert size") + ylab("Count") +
+    xlab("Insert Size") + ylab("Count") +
     scale_fill_manual(name="", values=colorSet)+
     ggtitle(paste("Insert size for all reads in", samples[i], sep=" ")) +
     theme(axis.title = element_text(face="bold", size=15),
@@ -52,6 +52,31 @@ plot_quality_distribution_metrics <- function(){
     xlab("Quality Score") + ylab("Observations") +
     scale_fill_manual(name="", values=colorSet)+
     ggtitle(paste("Quality score distribution in", samples[i], sep=" ")) +
+    theme(axis.title = element_text(face="bold", size=15),
+          axis.text = element_text(size=15),
+          plot.title = element_text(size=15, face ="bold"))
+}
+
+plot_gcMetricsBaseQuality <- function(){
+  ggplot(gc_bias_metrics.table, aes(x=GC, y=MEAN_BASE_QUALITY))+
+    geom_path(colour="#0072B2")+
+    coord_cartesian(xlim = c(0, 100), ylim = c(0, 40))+
+    xlab("GC%") + ylab("Mean Base Quality")+
+    ggtitle(paste("Mean base quality per GC% in", samples[i], sep=" ")) +
+    theme(axis.title = element_text(face="bold", size=15),
+          axis.text = element_text(size=15),
+          plot.title = element_text(size=15, face ="bold"))
+}
+
+limits = aes(ymax=NORMALIZED_COVERAGE + (ERROR_BAR_WIDTH/2), ymin=NORMALIZED_COVERAGE-(ERROR_BAR_WIDTH/2))
+
+plot_gcMetricsNormalizedCoverage <- function(){
+  ggplot(gc_bias_metrics.table, aes(x=GC, y=NORMALIZED_COVERAGE))+
+    geom_point(colour="#0072B2")+
+    coord_cartesian(xlim = c(0, 100), ylim = c(0, 3))+
+    geom_errorbar(limits, width=0.2, color="#E69F00")+
+    xlab("GC%") + ylab("Normalized Coverage")+
+    ggtitle(paste("Normalized coverage per GC% in", samples[i], sep=" "))+
     theme(axis.title = element_text(face="bold", size=15),
           axis.text = element_text(size=15),
           plot.title = element_text(size=15, face ="bold"))

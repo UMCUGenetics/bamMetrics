@@ -1,7 +1,7 @@
 Sample statistics - `r run_name`
 ========================================================
 
-```{r echo=FALSE, fig.width=7, fig.height=7}
+```{r echo=FALSE}
 for(i in 1:length(samples)) {
   samplePath = paste(output_dir,samples[i],samples[i],sep="/")
     
@@ -19,6 +19,13 @@ for(i in 1:length(samples)) {
   quality_distribution_metrics = paste(samplePath,"_MultipleMetrics.txt.quality_distribution_metrics", sep="")
   quality_distribution_metrics.table = read.table(file=quality_distribution_metrics, head=TRUE)
   print(plot_quality_distribution_metrics())
+  
+  if (gc_metrics){
+    gc_bias_metrics = paste(samplePath,"_MultipleMetrics.txt.gc_bias.detail_metrics", sep="")
+    gc_bias_metrics.table = read.table(file=gc_bias_metrics, head=TRUE, sep="\t", nrows=101)
+    print(plot_gcMetricsBaseQuality())
+    print(plot_gcMetricsNormalizedCoverage())
+  }
 }
 ```
 
