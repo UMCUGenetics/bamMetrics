@@ -41,7 +41,7 @@ my $queue = "veryshort";
 my $queue_threads = 1;
 my $queue_mem = 8;
 my $queue_reserve = "";
-my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.128";
+my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.135";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
 # Development settings
@@ -383,7 +383,7 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -queue <veryshort>
      -queue_threads 1
      -queue_mem 8
-     -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.128>
+     -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.135>
 
 =cut
 
