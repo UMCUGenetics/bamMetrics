@@ -41,6 +41,7 @@ my $queue = "veryshort";
 my $queue_threads = 1;
 my $queue_mem = 8;
 my $queue_reserve = "";
+my $queue_project = "cog_bioinf";
 my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.135";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
@@ -69,6 +70,7 @@ GetOptions ("bam=s" => \@bams,
 	    "queue_threads=i" =>  \$queue_threads,
 	    "queue_mem=i" => \$queue_mem,
 	    "queue_reserve" => \$queue_reserve,
+	    "queue_project=s" => \$queue_project,
 	    "picard_path=s" => \$picard_path,
 	    "genome=s" => \$genome,
 	    "debug" => \$debug
@@ -126,6 +128,7 @@ foreach my $bam (@bams) {
 		queue => $queue,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
+		queueProject => $queue_project,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -143,6 +146,7 @@ foreach my $bam (@bams) {
 		queue => $queue,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
+		queueProject => $queue_project,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -159,6 +163,7 @@ foreach my $bam (@bams) {
 	    queue => $queue,
 	    queueThreads => $queue_threads,
 	    queueReserve => $queue_reserve,
+	    queueProject => $queue_project,
 	    );
 	push(@picardJobs, $jobID);
     }
@@ -176,6 +181,7 @@ foreach my $bam (@bams) {
 		queue => $queue,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
+		queueProject => $queue_project,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -196,6 +202,7 @@ foreach my $bam (@bams) {
 		queue => $queue,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
+		queueProject => $queue_project,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -215,6 +222,7 @@ foreach my $bam (@bams) {
 		queue => $queue,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
+		queueProject => $queue_project,
 		);
 	    push(@picardJobs, $jobID);
 	}
@@ -236,6 +244,7 @@ if( @wgsmetrics ) {
 	queue => $queue,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
+	queueProject => $queue_project,
 	holdJobs => join(",",@picardJobs),
 	);
     push(@picardJobs, $jobID);
@@ -252,6 +261,7 @@ if( @rnametrics ) {
 	queue => $queue,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
+	queueProject => $queue_project,
 	holdJobs => join(",",@picardJobs),
 	);
     push(@picardJobs, $jobID);
@@ -268,6 +278,7 @@ if( @hsmetrics ) {
 	queue => $queue,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
+	queueProject => $queue_project,
 	holdJobs => join(",",@picardJobs),
 	);
     push(@picardJobs, $jobID);
@@ -283,6 +294,7 @@ my $jobID = bashAndSubmit(
     queue => $queue,
     queueThreads => $queue_threads,
     queueReserve => $queue_reserve,
+    queueProject => $queue_project,
     holdJobs => join(",",@picardJobs),
 );
 push(@picardJobs, $jobID);
@@ -298,6 +310,7 @@ if(! $debug){
 	queue => $queue,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
+	queueProject => $queue_project,
 	holdJobs => join(",",@picardJobs),
 	log_output => "/dev/null",
     );
@@ -333,9 +346,9 @@ sub bashAndSubmit {
     close BASH;
     
     if( $args{holdJobs} ){
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
     } else {
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -o $log_output -e $log_output -N $jobID $bashFile";
+	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID $bashFile";
     }
     return $jobID;
 }
@@ -383,6 +396,7 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -queue <veryshort>
      -queue_threads 1
      -queue_mem 8
+     -queue_project cog_bioinf
      -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.135>
 
 =cut
