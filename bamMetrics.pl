@@ -96,7 +96,7 @@ my @hsmetrics;
 my @rnametrics;
 my @bam_names;
 my $javaMem = $queue_threads * $queue_mem;
-my $picard = " java -Xmx".$javaMem."G -jar ".$picard_path."/picard.jar";
+my $picard = "java -Xmx".$javaMem."G -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
 
 foreach my $bam (@bams) {
     #Parse bam file name
