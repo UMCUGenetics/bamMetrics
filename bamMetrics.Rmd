@@ -65,7 +65,7 @@ if (hsMetrics){
   print(xtable(summaryTableT[c(6:(nrow(summaryTableT)-3)),]),type='html')
 
 } else if (wgsMetrics){
-  print(xtable(summaryTableT[c(3:(nrow(summaryTableT))),]),type='html')
+  print(xtable(summaryTableT[c(2:(nrow(summaryTableT))),]),type='html')
   #for(i in 1:length(samples)) {
     #samplePath = paste(samples[i],"QCStats",samples[i],sep="/")
     #wd_sample = paste(working_dir, samplePath, sep="/")
@@ -75,6 +75,6 @@ if (hsMetrics){
     #print(plot_wgs_metrics())
   #}
 } else if (rnaMetrics){
-  print(xtable(summaryTableT[c(3:(nrow(summaryTableT))),]),type='html')
+  print(xtable(summaryTableT[c(2:(nrow(summaryTableT))),]),type='html')
 }
 ```
