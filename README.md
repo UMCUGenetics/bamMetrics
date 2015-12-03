@@ -27,9 +27,31 @@ Tool to generate bam statistics and pdf/html reports. To be used on the UMC hpc 
 - output_dir ./bamMetrics
 - run_name bamMetrics
 - genome genome.fasta
-- queue veryshort
+- queue all.q
+- queue_time    2:0:0
 - queue_threads 1
 - queue_mem 8
 - picard_path /path/to/picard/
 
+#### Dependencies
+- Perl
+- R
+- sge
+- Picard >= 1.119
 
+##### Perl Modules
+- strict
+- Getopt::Long
+- Pod::Usage
+- POSIX
+- Cwd
+- File::Basename
+
+##### R packages
+- ggplot2
+- knitr
+- markdown
+- reshape
+- xtable
+- tools
+- brew
