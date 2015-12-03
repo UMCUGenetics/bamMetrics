@@ -37,7 +37,8 @@ my $output_dir = cwd()."/bamMetrics";
 my $run_name = "bamMetrics";
 
 # Picard and Cluster settings
-my $queue = "veryshort";
+my $queue = "all.q";
+my $queue_time = "2:0:0";
 my $queue_threads = 1;
 my $queue_mem = 8;
 my $queue_reserve = "";
@@ -95,8 +96,7 @@ my @wgsmetrics;
 my @hsmetrics;
 my @rnametrics;
 my @bam_names;
-my $javaMem = $queue_threads * $queue_mem;
-my $picard = "java -Xmx".$javaMem."G -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
+my $picard = "java -Xmx".$queue_mem."G -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
 
 foreach my $bam (@bams) {
     #Parse bam file name
@@ -126,6 +126,8 @@ foreach my $bam (@bams) {
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -144,6 +146,8 @@ foreach my $bam (@bams) {
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -161,6 +165,8 @@ foreach my $bam (@bams) {
 	    tmpDir => $tmp_dir,
 	    outputDir => $bam_dir,
 	    queue => $queue,
+	    queueTime => $queue_time,
+	    queueMem => $queue_mem,
 	    queueThreads => $queue_threads,
 	    queueReserve => $queue_reserve,
 	    queueProject => $queue_project,
@@ -179,6 +185,8 @@ foreach my $bam (@bams) {
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -200,6 +208,8 @@ foreach my $bam (@bams) {
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -220,6 +230,8 @@ foreach my $bam (@bams) {
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -242,6 +254,8 @@ if( @wgsmetrics ) {
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -259,6 +273,8 @@ if( @rnametrics ) {
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -276,6 +292,8 @@ if( @hsmetrics ) {
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -292,6 +310,8 @@ my $jobID = bashAndSubmit(
     tmpDir => $tmp_dir,
     outputDir => $output_dir,
     queue => $queue,
+    queueTime => $queue_time,
+    queueMem => $queue_mem,
     queueThreads => $queue_threads,
     queueReserve => $queue_reserve,
     queueProject => $queue_project,
@@ -308,6 +328,8 @@ if(! $debug){
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -346,9 +368,9 @@ sub bashAndSubmit {
     close BASH;
     
     if( $args{holdJobs} ){
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
+	system "qsub -l h_rt=$args{queueTime},h_vmem=$args{queueMem}G -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
     } else {
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID $bashFile";
+	system "qsub -l h_rt=$args{queueTime},h_vmem=$args{queueMem}G -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID $bashFile";
     }
     return $jobID;
 }
@@ -393,7 +415,8 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -run_name <bamMetrics>
      -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
      -queue_reserve (default is no node reservation)
-     -queue <veryshort>
+     -queue <all.q>
+     -queue_time h:m:s
      -queue_threads 1
      -queue_mem 8
      -queue_project cog_bioinf
