@@ -96,6 +96,7 @@ my @wgsmetrics;
 my @hsmetrics;
 my @rnametrics;
 my @bam_names;
+my $queue_java_mem = $queue_mem * 1.25; # Request more memory for java jobs
 my $picard = "java -Xmx".$queue_mem."G -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
 
 foreach my $bam (@bams) {
@@ -127,7 +128,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueTime => $queue_time,
-		queueMem => $queue_mem,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -147,7 +148,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueTime => $queue_time,
-		queueMem => $queue_mem,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -166,7 +167,7 @@ foreach my $bam (@bams) {
 	    outputDir => $bam_dir,
 	    queue => $queue,
 	    queueTime => $queue_time,
-	    queueMem => $queue_mem,
+	    queueMem => $queue_java_mem,
 	    queueThreads => $queue_threads,
 	    queueReserve => $queue_reserve,
 	    queueProject => $queue_project,
@@ -186,7 +187,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueTime => $queue_time,
-		queueMem => $queue_mem,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -209,7 +210,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueTime => $queue_time,
-		queueMem => $queue_mem,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -231,7 +232,7 @@ foreach my $bam (@bams) {
 		outputDir => $bam_dir,
 		queue => $queue,
 		queueTime => $queue_time,
-		queueMem => $queue_mem,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -255,7 +256,7 @@ if( @wgsmetrics ) {
 	outputDir => $output_dir,
 	queue => $queue,
 	queueTime => $queue_time,
-	queueMem => $queue_mem,
+	queueMem => $queue_java_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -274,7 +275,7 @@ if( @rnametrics ) {
 	outputDir => $output_dir,
 	queue => $queue,
 	queueTime => $queue_time,
-	queueMem => $queue_mem,
+	queueMem => $queue_java_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -293,7 +294,7 @@ if( @hsmetrics ) {
 	outputDir => $output_dir,
 	queue => $queue,
 	queueTime => $queue_time,
-	queueMem => $queue_mem,
+	queueMem => $queue_java_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
