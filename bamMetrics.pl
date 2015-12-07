@@ -96,7 +96,7 @@ my @wgsmetrics;
 my @hsmetrics;
 my @rnametrics;
 my @bam_names;
-my $queue_java_mem = $queue_mem * 1.25; # Request more memory for java jobs
+my $queue_java_mem = $queue_mem + 4; # Request more memory for java jobs
 my $picard = "java -Xmx".$queue_mem."G -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
 
 foreach my $bam (@bams) {
