@@ -103,7 +103,7 @@ my $picard = "java -Xmx".$queue_mem."G -XX:ParallelGCThreads=$queue_java_threads
 
 foreach my $bam (@bams) {
     #Parse bam file name
-    $bam = abs_path($bam);
+    $bam = File::Spec->rel2abs($bam);
     my $bam_name = (split("/",$bam))[-1];
     $bam_name =~ s/.bam//;
     push(@bam_names, $bam_name);
