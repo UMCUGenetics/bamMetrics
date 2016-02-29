@@ -43,7 +43,7 @@ my $queue_threads = 1;
 my $queue_mem = 8;
 my $queue_reserve = "";
 my $queue_project = "cog_bioinf";
-my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.135";
+my $picard_path = "/hpc/local/CentOS7/cog_bioinf/picard-tools-1.141";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
 # Development settings
