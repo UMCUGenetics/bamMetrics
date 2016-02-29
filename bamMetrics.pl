@@ -37,12 +37,13 @@ my $output_dir = cwd()."/bamMetrics";
 my $run_name = "bamMetrics";
 
 # Picard and Cluster settings
-my $queue = "veryshort";
+my $queue = "all.q";
+my $queue_time = "2:0:0";
 my $queue_threads = 1;
 my $queue_mem = 8;
 my $queue_reserve = "";
 my $queue_project = "cog_bioinf";
-my $picard_path = "/hpc/cog_bioinf/common_scripts/picard-tools-1.135";
+my $picard_path = "/hpc/local/CentOS7/cog_bioinf/picard-tools-1.141";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
 # Development settings
@@ -67,6 +68,7 @@ GetOptions ("bam=s" => \@bams,
 	    "output_dir=s" => \$output_dir,
 	    "run_name=s", => \$run_name,
 	    "queue=s" => \$queue,
+	    "queue_time=s" => \$queue_time,
 	    "queue_threads=i" =>  \$queue_threads,
 	    "queue_mem=i" => \$queue_mem,
 	    "queue_reserve" => \$queue_reserve,
@@ -95,12 +97,13 @@ my @wgsmetrics;
 my @hsmetrics;
 my @rnametrics;
 my @bam_names;
-my $javaMem = $queue_threads * $queue_mem;
-my $picard = "java -Xmx".$javaMem."G -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
+my $queue_java_mem = $queue_mem + 4; # Request more memory for java jobs
+my $queue_java_threads = $queue_threads - 1;
+my $picard = "java -Xmx".$queue_mem."G -XX:ParallelGCThreads=$queue_java_threads -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
 
 foreach my $bam (@bams) {
     #Parse bam file name
-    $bam = abs_path($bam);
+    $bam = File::Spec->rel2abs($bam);
     my $bam_name = (split("/",$bam))[-1];
     $bam_name =~ s/.bam//;
     push(@bam_names, $bam_name);
@@ -116,7 +119,7 @@ foreach my $bam (@bams) {
     my $output = $bam_dir."/".$bam_name."_MultipleMetrics.txt";
     if( $single_end ){
 	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
-	    my $command = $picard." CollectMultipleMetrics R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    my $command = $picard." CollectMultipleMetrics TMP_DIR=".$tmp_dir." R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	    if($wgs){
 		$command .= " PROGRAM=CollectGcBiasMetrics";
 	    }
@@ -126,6 +129,8 @@ foreach my $bam (@bams) {
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -134,7 +139,7 @@ foreach my $bam (@bams) {
 	}
     } else { #paired
 	if(! (-e $output.".alignment_summary_metrics" && -e $output.".base_distribution_by_cycle_metrics" && -e $output.".insert_size_metrics" && -e $output.".quality_by_cycle_metrics" && -e $output.".quality_distribution_metrics") ) {
-	    my $command = $picard." CollectMultipleMetrics R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
+	    my $command = $picard." CollectMultipleMetrics TMP_DIR=".$tmp_dir." R=".$genome." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." PROGRAM=CollectAlignmentSummaryMetrics PROGRAM=CollectInsertSizeMetrics PROGRAM=QualityScoreDistribution PROGRAM=QualityScoreDistribution";
 	    if($wgs){
 		$command .= " PROGRAM=CollectGcBiasMetrics";
 	    }
@@ -144,6 +149,8 @@ foreach my $bam (@bams) {
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -154,13 +161,15 @@ foreach my $bam (@bams) {
     # Library Complexity
     $output = $bam_dir."/".$bam_name."_LibComplexity.txt";
     if(! -e $output) {
-	my $command = $picard." EstimateLibraryComplexity INPUT=".$bam." OUTPUT=".$output;
+	my $command = $picard." EstimateLibraryComplexity TMP_DIR=".$tmp_dir." INPUT=".$bam." OUTPUT=".$output;
 	my $jobID = bashAndSubmit(
 	    command => $command,
 	    jobName => "LibComplexity_".$bam_name."_".get_job_id(),
 	    tmpDir => $tmp_dir,
 	    outputDir => $bam_dir,
 	    queue => $queue,
+	    queueTime => $queue_time,
+	    queueMem => $queue_java_mem,
 	    queueThreads => $queue_threads,
 	    queueReserve => $queue_reserve,
 	    queueProject => $queue_project,
@@ -172,13 +181,15 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_WGSMetrics.txt";
 	push(@wgsmetrics, $output);
 	if(! -e $output) {
-	    my $command = $picard." CollectWgsMetrics R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=".$min_map_qual." MINIMUM_BASE_QUALITY=".$min_base_qual." COVERAGE_CAP=".$coverage_cap;
+	    my $command = $picard." CollectWgsMetrics TMP_DIR=".$tmp_dir." R=".$genome." INPUT=".$bam." OUTPUT=".$output." MINIMUM_MAPPING_QUALITY=".$min_map_qual." MINIMUM_BASE_QUALITY=".$min_base_qual." COVERAGE_CAP=".$coverage_cap;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "WGSMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -193,13 +204,15 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_RNAMetrics.txt";
 	push(@rnametrics, $output);
 	if(! -e $output) {
-	    my $command = $picard." CollectRnaSeqMetrics R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand." RIBOSOMAL_INTERVALS=".$rib_interval;
+	    my $command = $picard." CollectRnaSeqMetrics TMP_DIR=".$tmp_dir." R=".$genome." REF_FLAT=".$ref_flat." ASSUME_SORTED=TRUE INPUT=".$bam." OUTPUT=".$output." STRAND_SPECIFICITY=".$strand." RIBOSOMAL_INTERVALS=".$rib_interval;
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "RNAMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -213,13 +226,15 @@ foreach my $bam (@bams) {
 	my $output = $bam_dir."/".$bam_name."_HSMetrics.txt";
 	push(@hsmetrics, $output);
 	if(! -e $output) {
-	    my $command = $picard." CalculateHsMetrics R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
+	    my $command = $picard." CalculateHsMetrics TMP_DIR=".$tmp_dir." R=".$genome." INPUT=".$bam." OUTPUT=".$output." BAIT_INTERVALS=".$baits." TARGET_INTERVALS=".$targets." METRIC_ACCUMULATION_LEVEL=SAMPLE";
 	    my $jobID = bashAndSubmit(
 		command => $command,
 		jobName => "HSMetrics_".$bam_name."_".get_job_id(),
 		tmpDir => $tmp_dir,
 		outputDir => $bam_dir,
 		queue => $queue,
+		queueTime => $queue_time,
+		queueMem => $queue_java_mem,
 		queueThreads => $queue_threads,
 		queueReserve => $queue_reserve,
 		queueProject => $queue_project,
@@ -242,6 +257,8 @@ if( @wgsmetrics ) {
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_java_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -259,6 +276,8 @@ if( @rnametrics ) {
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_java_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -276,6 +295,8 @@ if( @hsmetrics ) {
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_java_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -292,6 +313,8 @@ my $jobID = bashAndSubmit(
     tmpDir => $tmp_dir,
     outputDir => $output_dir,
     queue => $queue,
+    queueTime => $queue_time,
+    queueMem => $queue_mem,
     queueThreads => $queue_threads,
     queueReserve => $queue_reserve,
     queueProject => $queue_project,
@@ -308,6 +331,8 @@ if(! $debug){
 	tmpDir => $tmp_dir,
 	outputDir => $output_dir,
 	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_mem,
 	queueThreads => $queue_threads,
 	queueReserve => $queue_reserve,
 	queueProject => $queue_project,
@@ -346,9 +371,9 @@ sub bashAndSubmit {
     close BASH;
     
     if( $args{holdJobs} ){
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
+	system "qsub -l h_rt=$args{queueTime},h_vmem=$args{queueMem}G -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID -hold_jid $args{holdJobs} $bashFile";
     } else {
-	system "qsub -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID $bashFile";
+	system "qsub -l h_rt=$args{queueTime},h_vmem=$args{queueMem}G -q $args{queue} -pe threaded $args{queueThreads} -R $queue_reserve -P $args{queueProject} -o $log_output -e $log_output -N $jobID $bashFile";
     }
     return $jobID;
 }
@@ -393,7 +418,8 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -run_name <bamMetrics>
      -genome </hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta>
      -queue_reserve (default is no node reservation)
-     -queue <veryshort>
+     -queue <all.q>
+     -queue_time h:m:s
      -queue_threads 1
      -queue_mem 8
      -queue_project cog_bioinf
