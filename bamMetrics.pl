@@ -10,6 +10,7 @@ use Pod::Usage;
 use POSIX qw(tmpnam);
 use Cwd qw(cwd abs_path);
 use File::Basename qw( dirname );
+use File::Copy;
 
 ### Input options ###
 
@@ -44,6 +45,7 @@ my $queue_mem = 8;
 my $queue_reserve = "";
 my $queue_project = "cog_bioinf";
 my $picard_path = "/hpc/local/CentOS7/cog_bioinf/picard-tools-1.141";
+my $sambamba_path = "/hpc/local/CentOS7/cog_bioinf/sambamba_v0.5.8";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
 # Development settings
@@ -74,6 +76,7 @@ GetOptions ("bam=s" => \@bams,
 	    "queue_reserve" => \$queue_reserve,
 	    "queue_project=s" => \$queue_project,
 	    "picard_path=s" => \$picard_path,
+	    "sambamba_path=s" => \$sambamba_path,
 	    "genome=s" => \$genome,
 	    "debug" => \$debug
 	    ) or pod2usage(1);
@@ -97,6 +100,7 @@ my @wgsmetrics;
 my @hsmetrics;
 my @rnametrics;
 my @bam_names;
+my @flagstat_files;
 my $queue_java_mem = $queue_mem + 4; # Request more memory for java jobs
 my $queue_java_threads = $queue_threads - 1;
 my $picard = "java -Xmx".$queue_mem."G -XX:ParallelGCThreads=$queue_java_threads -Djava.io.tmpdir=".$tmp_dir." -jar ".$picard_path."/picard.jar";
@@ -114,6 +118,30 @@ foreach my $bam (@bams) {
     if(! -e $bam_dir){
 	mkdir($bam_dir) or die "Could not create directory: $bam_dir";
     }
+
+    # Get flagstats
+    my $bam_flagstat = $bam =~ s/.bam/.flagstat/r;
+    if(-e $bam_flagstat) {
+	copy($bam_flagstat, $bam_dir."/".$bam_name.".flagstat");
+	$bam_flagstat = $bam_dir."/".$bam_name.".flagstat";
+    } else {
+	my $command = $sambamba_path."/sambamba flagstat -t ".$queue_threads." ".$bam." > ".$bam_dir."/".$bam_name.".flagstat";
+	my $jobID = bashAndSubmit(
+	    command => $command,
+	    jobName => "Flagstat_".$bam_name."_".get_job_id(),
+	    tmpDir => $tmp_dir,
+	    outputDir => $bam_dir,
+	    queue => $queue,
+	    queueTime => $queue_time,
+	    queueMem => $queue_mem,
+	    queueThreads => $queue_threads,
+	    queueReserve => $queue_reserve,
+	    queueProject => $queue_project,
+	);
+	$bam_flagstat = $bam_dir."/".$bam_name.".flagstat";
+	push(@picardJobs, $jobID);
+    }
+    push(@flagstat_files, $bam_flagstat);
 
     # Multiple metrics
     my $output = $bam_dir."/".$bam_name."_MultipleMetrics.txt";
@@ -244,9 +272,27 @@ foreach my $bam (@bams) {
     }
 }
 
-### Parse HSMetrics or WGSMetrics
+### Parse flagstats ###
 my $root_dir = dirname(abs_path($0));
+print "\n Parse Flagstats \n";
+my $command = "perl $root_dir/parseFlagstatOutput.pl -output_dir ".$output_dir." ";
+foreach my $flagstat (@flagstat_files) { $command .= "-flagstat $flagstat " }
+    my $jobID = bashAndSubmit(
+	command => $command,
+	jobName => "parse_flagstats_".get_job_id(),
+	tmpDir => $tmp_dir,
+	outputDir => $output_dir,
+	queue => $queue,
+	queueTime => $queue_time,
+	queueMem => $queue_java_mem,
+	queueThreads => $queue_threads,
+	queueReserve => $queue_reserve,
+	queueProject => $queue_project,
+	holdJobs => join(",",@picardJobs),
+	);
+    push(@picardJobs, $jobID);
 
+### Parse HSMetrics or WGSMetrics
 if( @wgsmetrics ) {
     print "\n Parse WGSMetrics \n";
     my $command = "perl $root_dir/parsePicardOutput.pl -output_dir ".$output_dir." ";
@@ -306,8 +352,8 @@ if( @hsmetrics ) {
 }
 
 ### Run Rplots ###
-my $command = "Rscript $root_dir/bamMetrics.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
-my $jobID = bashAndSubmit(
+$command = "Rscript $root_dir/bamMetrics.R -output_dir $output_dir -root_dir $root_dir -run_name $run_name -samples ".join(" -samples ", @bam_names);
+$jobID = bashAndSubmit(
     command => $command,
     jobName => "bamMetrics_report_".$run_name,
     tmpDir => $tmp_dir,
@@ -424,6 +470,7 @@ $ perl bamMetrics.pl [options] -bam <bamfile1.bam> -bam <bamfile2.bam>
      -queue_mem 8
      -queue_project cog_bioinf
      -picard_path </hpc/cog_bioinf/common_scripts/picard-tools-1.135>
+     -sambamba_path </hpc/local/CentOS7/cog_bioinf/sambamba_v0.5.8>
 
 =cut
 

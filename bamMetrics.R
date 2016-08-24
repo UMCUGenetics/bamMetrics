@@ -15,8 +15,8 @@ GetoptLong(c(
 #debug
 #samples = c("CONTROLP25_dedup","CONTROLP26_dedup") #debug
 #root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamMetrics/" #debug
-#output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testData/bams/bamMetrics" #debug
-#run_name = "bamMetrics"
+#output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testSubsetExome/QCStats" #debug
+#run_name = "testSubsetExome"
 
 ### Load functions 
 source(paste(root_dir,"bamMetrics_include.R",sep="/"))
@@ -32,7 +32,11 @@ if (length(samples) <= length(cbPalette)){
   colorSet = GetRandomColorSet(length(samples))
 }
 
-### Parse hsmetrics table
+### Parse flagstats
+fileName = paste(output_dir,"flagstat_summary.txt",sep="/")
+flagstatTable = read.table(file=fileName, sep="\t", header=TRUE, stringsAsFactors=FALSE, row.names = 1)
+
+## Parse hsmetrics table
 fileName = paste(output_dir,"HSMetrics_summary.txt",sep="/")
 hsMetrics = FALSE
 if (file.exists(fileName)){
@@ -44,6 +48,7 @@ if (file.exists(fileName)){
   #Transpose and write summaryTable
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
+  summaryTableT = rbind(flagstatTable, summaryTableT[c(6:(nrow(summaryTableT)-3)),])
   write.table(summaryTableT, file="HSMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
   
   pdfOut =  paste(output_dir,"pdfFigures", sep="/")
@@ -69,6 +74,7 @@ if (file.exists(fileName)){
   #Transpose and write summaryTable
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
+  summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))),])
   write.table(summaryTableT, file="WGSMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
 }
 
@@ -83,6 +89,7 @@ if (file.exists(fileName)){
   #Transpose and write summaryTable
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
+  summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))),])
   write.table(summaryTableT, file="RNAMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
 }
 

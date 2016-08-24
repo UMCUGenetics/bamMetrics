@@ -74,21 +74,13 @@ Target interval file = <%= cat(gsub("_","\\_",tail(strsplit(unique(summaryTable$
 \pagebreak
 
 \begin{landscape}
-  <%= include_tbl(tableName=summaryTableT[c(6:(nrow(summaryTableT)-3)), ,drop=FALSE]) %>
+  <%= include_tbl(tableName=summaryTableT) %>
 \end{landscape}
-<% } %>
 
-<% if (wgsMetrics){ %>
+<% } else { %>
 \begin{landscape}
   \section*{Coverage statistics}
-  <%= include_tbl(tableName=summaryTableT[c(2:(nrow(summaryTableT))), ,drop=FALSE]) %>
-\end{landscape}
-<% } %>
-
-<% if (rnaMetrics){ %>
-\begin{landscape}
-  \section*{Coverage statistics}
-  <%= include_tbl(tableName=summaryTableT[c(2:(nrow(summaryTableT))), ,drop=FALSE]) %>
+  <%= include_tbl(tableName=summaryTableT) %>
 \end{landscape}
 <% } %>
 \end{document}
