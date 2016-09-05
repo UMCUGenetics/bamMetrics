@@ -45,7 +45,7 @@ my $queue_mem = 8;
 my $queue_reserve = "";
 my $queue_project = "cog_bioinf";
 my $picard_path = "/hpc/local/CentOS7/cog_bioinf/picard-tools-1.141";
-my $sambamba_path = "/hpc/local/CentOS7/cog_bioinf/sambamba_v0.5.8";
+my $sambamba_path = "/hpc/local/CentOS7/cog_bioinf/sambamba_v0.6.1";
 my $genome = "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta";
 
 # Development settings
