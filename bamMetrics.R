@@ -34,7 +34,7 @@ if (length(samples) <= length(cbPalette)){
 
 ### Parse flagstats
 fileName = paste(output_dir,"flagstat_summary.txt",sep="/")
-flagstatTable = read.table(file=fileName, sep="\t", header=TRUE, stringsAsFactors=FALSE, row.names = 1)
+flagstatTable = read.table(file=fileName, sep="\t", header=TRUE, stringsAsFactors=FALSE, row.names = 1, check.names = FALSE)
 
 ## Parse hsmetrics table
 fileName = paste(output_dir,"HSMetrics_summary.txt",sep="/")
