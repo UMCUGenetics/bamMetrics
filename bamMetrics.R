@@ -13,10 +13,10 @@ GetoptLong(c(
 ))
 
 #debug
-#samples = c("CONTROLP25_dedup","CONTROLP26_dedup") #debug
-#root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamMetrics/" #debug
-#output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testSubsetExome/QCStats" #debug
-#run_name = "testSubsetExome"
+samples = c("CONTROLP25_dedup","CONTROLP26_dedup","CONTROLP27_dedup") #debug
+root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamMetrics/" #debug
+output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testSubsetExome/QCStats" #debug
+run_name = "testSubsetExome"
 
 ### Load functions 
 source(paste(root_dir,"bamMetrics_include.R",sep="/"))
@@ -48,8 +48,8 @@ if (file.exists(fileName)){
   #Transpose and write summaryTable
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
-  summaryTableT = rbind(flagstatTable, summaryTableT[c(6:(nrow(summaryTableT)-3)),])
-  write.table(summaryTableT, file="HSMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
+  summaryTableT = rbind(flagstatTable, summaryTableT[c(4:(nrow(summaryTableT)-3)),])
+  write.table(summaryTableT, file="HSMetrics_summary.transposed.txt", col.names=NA, na="", quote=FALSE, sep="\t")
   
   pdfOut =  paste(output_dir,"pdfFigures", sep="/")
   
@@ -75,7 +75,7 @@ if (file.exists(fileName)){
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
   summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))),])
-  write.table(summaryTableT, file="WGSMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
+  write.table(summaryTableT, file="WGSMetrics_summary.transposed.txt", col.names=NA, na="", quote=FALSE, sep="\t")
 }
 
 ### Parse RNAMetrics table
@@ -90,7 +90,7 @@ if (file.exists(fileName)){
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
   summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))),])
-  write.table(summaryTableT, file="RNAMetrics_summary.transposed.txt", col.names=FALSE, na="", quote=FALSE, sep="\t")
+  write.table(summaryTableT, file="RNAMetrics_summary.transposed.txt", col.names=NA, na="", quote=FALSE, sep="\t")
 }
 
 ### Plot sample metrics to pdf files.
