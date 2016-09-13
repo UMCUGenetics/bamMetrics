@@ -12,12 +12,6 @@ GetoptLong(c(
   "run_name=s", "Run name to use as title for bamMetrics output"
 ))
 
-#debug
-samples = c("CONTROLP25_dedup","CONTROLP26_dedup","CONTROLP27_dedup") #debug
-root_dir = "/hpc/cog_bioinf/data/robert/scripts/bamMetrics/" #debug
-output_dir = "/hpc/cog_bioinf/data/robert/testIAP/testSubsetExome/QCStats" #debug
-run_name = "testSubsetExome"
-
 ### Load functions 
 source(paste(root_dir,"bamMetrics_include.R",sep="/"))
 
