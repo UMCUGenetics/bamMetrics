@@ -39,6 +39,7 @@ Tool to generate bam statistics and pdf/html reports. To be used on the UMC hpc 
 - R
 - sge
 - Picard >= 1.119
+- Sambamba
 
 ### Perl Modules
 - strict
