@@ -142,7 +142,7 @@ include_tbl <- function(tableName) {
   splitTableN = floor(75/colNameMean)  
   splitTable = split(1:colNumber, rep(1:colNumber,each=splitTableN,length=colNumber))
   for (i in 1:length(splitTable)){
-    tempTable = as.matrix(tableName[, unlist(splitTable[i],use.names=F)])
+    tempTable = as.matrix(tableName[, unlist(splitTable[i],use.names=F), drop=FALSE])
     colnames(tempTable) = colnames(tableName)[unlist(splitTable[i],use.names=F)]
     print(xtable(tempTable), type="latex",table.placement = "H")
   }
