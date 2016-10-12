@@ -109,9 +109,8 @@ foreach my $bam (@bams) {
     #Parse bam file name
     $bam = File::Spec->rel2abs($bam);
     my $bam_name = (split("/",$bam))[-1];
-    $bam_name =~ s/.bam//;
+    $bam_name =~ s/\.bam$//;
     push(@bam_names, $bam_name);
-    print "\n$bam_name \t $bam \n";
 
     #Create picard output folder per bam file
     my $bam_dir = $output_dir."/".$bam_name;
@@ -120,12 +119,13 @@ foreach my $bam (@bams) {
     }
 
     # Get flagstats
-    my $bam_flagstat = $bam =~ s/.bam/.flagstat/r;
-    if(-e $bam_flagstat) {
-	copy($bam_flagstat, $bam_dir."/".$bam_name.".flagstat");
-	$bam_flagstat = $bam_dir."/".$bam_name.".flagstat";
+    my $orig_flagstat = $bam =~ s/\.bam$/.flagstat/r;
+    my $bam_flagstat = $bam_dir."/".$bam_name.".flagstat";
+    if(-e $orig_flagstat) {
+	copy($orig_flagstat, $bam_flagstat);
+	$bam_flagstat = $bam_flagstat;
     } else {
-	my $command = $sambamba_path."/sambamba flagstat -t ".$queue_threads." ".$bam." > ".$bam_dir."/".$bam_name.".flagstat";
+	my $command = $sambamba_path."/sambamba flagstat -t ".$queue_threads." ".$bam." > ".$bam_flagstat;
 	my $jobID = bashAndSubmit(
 	    command => $command,
 	    jobName => "Flagstat_".$bam_name."_".get_job_id(),
@@ -138,10 +138,11 @@ foreach my $bam (@bams) {
 	    queueReserve => $queue_reserve,
 	    queueProject => $queue_project,
 	);
-	$bam_flagstat = $bam_dir."/".$bam_name.".flagstat";
 	push(@picardJobs, $jobID);
     }
     push(@flagstat_files, $bam_flagstat);
+
+    print "\n$bam_name \t $bam \t $bam_flagstat\n";
 
     # Multiple metrics
     my $output = $bam_dir."/".$bam_name."_MultipleMetrics.txt";
