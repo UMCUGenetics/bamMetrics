@@ -2,6 +2,7 @@
 
 \usepackage[margin=1cm,nohead]{geometry}
 \usepackage[pdftex]{graphicx}
+\usepackage{grffile}
 \usepackage{subfig}
 \usepackage{float}
 \usepackage{pdflscape}

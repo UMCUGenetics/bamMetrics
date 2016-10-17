@@ -42,7 +42,7 @@ if (file.exists(fileName)){
   #Transpose and write summaryTable
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
-  summaryTableT = rbind(flagstatTable, summaryTableT[c(4:(nrow(summaryTableT)-3)),])
+  summaryTableT = rbind(flagstatTable, summaryTableT[c(4:(nrow(summaryTableT)-3)), , drop=FALSE])
   write.table(summaryTableT, file="HSMetrics_summary.transposed.txt", col.names=NA, na="", quote=FALSE, sep="\t")
   
   pdfOut =  paste(output_dir,"pdfFigures", sep="/")
@@ -68,7 +68,7 @@ if (file.exists(fileName)){
   #Transpose and write summaryTable
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
-  summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))),])
+  summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))), , drop=FALSE])
   write.table(summaryTableT, file="WGSMetrics_summary.transposed.txt", col.names=NA, na="", quote=FALSE, sep="\t")
 }
 
@@ -83,7 +83,7 @@ if (file.exists(fileName)){
   #Transpose and write summaryTable
   summaryTableT = t(summaryTable)
   colnames(summaryTableT) = summaryTableT[1,]
-  summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))),])
+  summaryTableT = rbind(flagstatTable, summaryTableT[c(2:(nrow(summaryTableT))), , drop=FALSE])
   write.table(summaryTableT, file="RNAMetrics_summary.transposed.txt", col.names=NA, na="", quote=FALSE, sep="\t")
 }
 
@@ -127,9 +127,9 @@ for(i in 1:length(samples)) {
 }
 
 ### Generate .html based on .Rmd file
-options(knitr.unnamed.chunk.label = "bamMetrics")
+options(knitr.package.unnamed.chunk.label = "bamMetrics")
 knit(paste(root_dir,"bamMetrics.Rmd", sep="/"),quiet=TRUE)
-markdownToHTML("bamMetrics.md", "bamMetrics.html", options=c("use_xhml"), stylesheet=paste(root_dir,"bamMetrics_html.css",sep="/"))
+markdownToHTML("bamMetrics.md", "bamMetrics.html", options=c("use_xhtml"), stylesheet=paste(root_dir,"bamMetrics_html.css",sep="/"))
 
 ### Generate .pdf based on .brew file
 brew(paste(root_dir,"bamMetrics.brew", sep="/"), "bamMetrics.tex")

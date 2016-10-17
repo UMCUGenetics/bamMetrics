@@ -30,15 +30,15 @@ print "Parsing flagstat files \n";
 foreach my $file (@flagstat_files) {
     print "\t Parsing: ". $file . "\n";
     open(FILE, $file) || die ("Can't open $file");
-    
+
     my ($sample) = ($file =~ m/.+\/(.+).flagstat/);
     push(@samples, $sample);
     while (my $line = <FILE>){
-	if ($. == 1 ) {
+	if ($. == 1) {
 	    my $total_reads = (split(' ',$line))[0];
 	    push(@read_counts, $total_reads);
 	}
-	if ($. == 5 ) { 
+	if ($. == 5) {
 	    my ($mapped_percentage) = $line =~ /(\d{2}\.\d{2}\%)/;
 	    push(@mapped_percentages, $mapped_percentage);
 	}
@@ -56,6 +56,6 @@ __END__
 
 =head1 SYNOPSIS
 
-$ perl parsePicardOutput.pl -output_dir /path/to/output -flagstat <my_file.flagstat>
+$ perl parseFlagstatOutput.pl -output_dir /path/to/output -flagstat <my_file.flagstat>
 
 =cut
