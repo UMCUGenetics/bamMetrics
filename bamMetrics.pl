@@ -123,7 +123,6 @@ foreach my $bam (@bams) {
     my $bam_flagstat = $bam_dir."/".$bam_name.".flagstat";
     if(-e $orig_flagstat) {
 	copy($orig_flagstat, $bam_flagstat);
-	$bam_flagstat = $bam_flagstat;
     } else {
 	my $command = $sambamba_path."/sambamba flagstat -t ".$queue_threads." ".$bam." > ".$bam_flagstat;
 	my $jobID = bashAndSubmit(
