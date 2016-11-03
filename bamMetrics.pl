@@ -1,4 +1,4 @@
-#!usr/bin/perl
+#!/usr/bin/env perl
 ### Robert Ernst
 ### bamMetrics
 ### Tool for generating html and/or pdf reports with bam statistics
