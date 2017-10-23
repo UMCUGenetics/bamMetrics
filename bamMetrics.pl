@@ -7,9 +7,9 @@ use strict;
 use warnings;
 use Getopt::Long;
 use Pod::Usage;
-use POSIX qw(tmpnam);
+use File::Temp qw/ :POSIX /;
 use Cwd qw(cwd abs_path);
-use File::Basename qw( dirname );
+use File::Basename qw( dirname fileparse );
 use File::Copy;
 
 ### Input options ###
@@ -426,7 +426,7 @@ sub bashAndSubmit {
 
 sub get_job_id {
     my $id = tmpnam();
-    $id =~ s/\/tmp\/file//;
+    $id = fileparse($id);
     return $id;
 }
 
