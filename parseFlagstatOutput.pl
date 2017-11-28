@@ -25,6 +25,8 @@ open(SUMFILE, ">", $filename) || die ("Can't create $filename");
 my @samples;
 my @read_counts;
 my @mapped_percentages;
+my @diff_chr_percentages;
+my @diff_chr_mapq_percentages;
 
 print "Parsing flagstat files \n";
 foreach my $file (@flagstat_files) {
@@ -33,14 +35,29 @@ foreach my $file (@flagstat_files) {
 
     my ($sample) = ($file =~ m/.+\/(.+).flagstat/);
     push(@samples, $sample);
+    my $total_reads;
+    my $mapped_reads;
+    
     while (my $line = <FILE>){
 	if ($. == 1) {
-	    my $total_reads = (split(' ',$line))[0];
+	    $total_reads = (split(' ',$line))[0];
 	    push(@read_counts, $total_reads);
 	}
 	if ($. == 5) {
-	    my ($mapped_percentage) = $line =~ /(\d{2}\.\d{2}\%)/;
-	    push(@mapped_percentages, $mapped_percentage);
+	    $mapped_reads = (split(' ',$line))[0];
+	    my $mapped_percentage = ($mapped_reads / $total_reads) * 100;
+	    push(@mapped_percentages, sprintf('%.2f%%', $mapped_percentage));
+	}
+	if ($. == 12){
+	    my $diff_chr = (split(' ',$line))[0];
+	    my $diff_chr_percentage = ($diff_chr / $total_reads) * 100;
+	    push(@diff_chr_percentages, sprintf('%.2f%%', $diff_chr_percentage));
+	    
+	}
+	if ($. == 13){
+	    my $diff_chr_mapq = (split(' ',$line))[0];
+	    my $diff_chr_mapq_percentage = ($diff_chr_mapq / $total_reads) * 100;
+	    push(@diff_chr_mapq_percentages, sprintf('%.2f%%', $diff_chr_mapq_percentage));
 	}
     }
     close FILE
@@ -49,6 +66,9 @@ foreach my $file (@flagstat_files) {
 print SUMFILE "sample\t". join("\t",@samples) ."\n";
 print SUMFILE "Total number of reads\t". join("\t",@read_counts) ."\n";
 print SUMFILE "Percentage reads mapped\t". join("\t",@mapped_percentages) ."\n";
+print SUMFILE "Percentage reads with mate mapped to different chr\t". join("\t",@diff_chr_percentages) ."\n";
+print SUMFILE "Percentage reads with mate mapped to different chr (mapQ>=5)\t". join("\t",@diff_chr_mapq_percentages) ."\n";
+
 
 close SUMFILE
 
